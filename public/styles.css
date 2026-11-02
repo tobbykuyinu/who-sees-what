@@ -194,8 +194,8 @@ main { max-width: 1240px; margin: 0 auto; padding: 24px 28px 64px; display: flex
 #matrix { padding: 12px 20px 4px; }
 .matrix-scroll { overflow: auto; border: 1px solid var(--border); border-radius: 10px; max-height: 520px; }
 table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 900px; table-layout: fixed; }
-.matrix col.col-party { width: 220px; }
-.matrix col.col-doc { width: calc((100% - 220px) / 12); }
+.matrix col.col-party { width: 280px; }
+.matrix col.col-doc { width: calc((100% - 280px) / 12); }
 .matrix th, .matrix td { border-bottom: 1px solid var(--border); }
 .matrix thead th { position: sticky; top: 0; background: var(--surface-2); z-index: 3; border-bottom: 1px solid var(--border-strong); }
 .matrix .corner { position: sticky; left: 0; z-index: 5; background: var(--surface-2); text-align: left; padding: 8px 12px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); width: 220px; min-width: 220px; max-width: 220px; }
