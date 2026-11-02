@@ -29,7 +29,7 @@ export function createChat(idx, deps) {
   const conversations = new Map(); // conversationId -> { draft, lastText }
   let counter = 0;
 
-  function handle({ text, conversationId }) {
+  async function handle({ text, conversationId }) {
     const id = conversationId || `conv-${++counter}`;
     const conv = conversations.get(id) || { draft: null, lastText: null };
 
@@ -56,7 +56,15 @@ export function createChat(idx, deps) {
       return { reply: { ...d, conversationId: id } };
     }
 
-    // 4. fallback
+    // 4. LLM fallback: free-form intent goes to the model, and its draft is
+    //    re-computed through the SAME deterministic preview engine below.
+    const llm = await tryLlm(text, deps);
+    if (llm) {
+      conversations.set(id, conv);
+      return { reply: { ...llm, conversationId: id } };
+    }
+
+    // 5. parser fallback
     const fallback = {
       kind: 'clarification',
       question: 'I can draft an access change, answer a question about who sees what, or refine the current draft. Try "release the new valuation to everyone committed", "what can Fjord see?" or "who sees the side letter?".',
@@ -65,6 +73,59 @@ export function createChat(idx, deps) {
     conv.lastText = text;
     conversations.set(id, conv);
     return { reply: { ...fallback, conversationId: id } };
+  }
+
+  // ---- LLM fallback ----------------------------------------------------------
+
+  async function tryLlm(text, deps) {
+    const base = process.env.ANTHROPIC_BASE_URL || 'https://api.deepseek.com/anthropic';
+    const key = process.env.ANTHROPIC_AUTH_TOKEN;
+    const model = process.env.ANTHROPIC_MODEL || 'deepseek-v4-pro[1m]';
+    if (!key) return null;
+    const parties = deps.overlay().parties || [];
+    const docs = deps.overlay().documents || [];
+    const partyLine = parties.map((p) => `${p.id}:${p.name} (${p.state || p.status})`).join('; ');
+    const docLine = docs.slice(0, 60).map((d) => `${d.id}:${d.name}`).join('; ');
+    const sys = [
+      'You are the intent layer of a data-room access product. Convert the analyst\'s message into STRICT JSON, one of:',
+      '{"kind":"decision-draft","action":{"type":"release","docIds":[],"partyScope":"committed|all|specific","partyIds":[]},"text":"short plain-English summary"}',
+      '{"kind":"answer","text":"plain-English answer about access"}',
+      '{"kind":"clarification","text":"question","options":["opt1","opt2"]}',
+      'Only ever draft release actions. Never include borrower or declined parties in grants.',
+      `PARTIES: ${partyLine}`,
+      `DOCUMENTS: ${docLine}`,
+      'Reply with JSON only, no markdown fences.',
+    ].join('\n');
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      const r = await fetch(`${base}/v1/messages`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+        body: JSON.stringify({ model, max_tokens: 500, system: sys, messages: [{ role: 'user', content: text }] }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (!r.ok) return null;
+      const data = await r.json();
+      const content = (data.content || []).map((b) => b.text || '').join('');
+      const json = JSON.parse(content.replace(/^```json|```$/g, '').trim());
+      if (json.kind === 'decision-draft' && json.action) {
+        const action = {
+          type: 'release',
+          docIds: Array.isArray(json.action.docIds) ? json.action.docIds : [],
+          partyScope: ['committed', 'all', 'specific'].includes(json.action.partyScope) ? json.action.partyScope : 'committed',
+          partyIds: Array.isArray(json.action.partyIds) ? json.action.partyIds : [],
+        };
+        const preview = deps.preview(action);
+        return { kind: 'decision-draft', refined: false, change: null, text: json.text || 'Draft ready', draft: { action, preview } };
+      }
+      if (json.kind === 'answer' && json.text) return { kind: 'answer', answer: { type: 'llm', text: json.text } };
+      if (json.kind === 'clarification' && json.text) return { kind: 'clarification', question: json.text, options: (json.options || []).slice(0, 4) };
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   // ---- refinement ----------------------------------------------------------

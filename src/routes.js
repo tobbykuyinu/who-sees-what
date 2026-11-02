@@ -106,8 +106,7 @@ export function createApp(store) {
       return res.status(400).json({ error: 'body.text (a non-empty string) is required' });
     if (conversationId !== undefined && typeof conversationId !== 'string')
       return res.status(400).json({ error: 'body.conversationId must be a string' });
-    const out = chat.handle({ text: text.trim(), conversationId });
-    res.json(out);
+    chat.handle({ text: text.trim(), conversationId }).then((out) => res.json(out)).catch((err) => res.status(500).json({ error: String(err && err.message || err) }));
   });
 
   return router;
