@@ -209,15 +209,15 @@
     if ((st.released[d.id] || []).indexOf(p.id) !== -1) return null;
     if ((st.restricted[d.id] || []).indexOf(p.id) !== -1) return 'Access revoked';
     if (d.sensitivity === 'internal') return 'Arranger only';
-    if (d.sensitivity === 'bank_specific') {
-      if (d.concernsPartyId === p.id) return null;
-      if (p.role === 'legal_advisor') return null;
-      return 'Bank-specific: only ' + partyName(d.concernsPartyId) + ' sees this';
-    }
     if (st.pending[d.id]) {
       if (d.sensitivity === 'bank_specific') return 'Not yet shared';
       if (p.role === 'borrower' || p.role === 'sponsor') return lenderSide(d) ? lenderSideReason(d) : 'Not yet released';
       return 'Not yet released to banks';
+    }
+    if (d.sensitivity === 'bank_specific') {
+      if (d.concernsPartyId === p.id) return null;
+      if (p.role === 'legal_advisor') return null;
+      return 'Bank-specific: only ' + partyName(d.concernsPartyId) + ' sees this';
     }
     if (d.sensitivity === 'public') return null;
     if (p.role === 'borrower' || p.role === 'sponsor') {
@@ -381,7 +381,8 @@
         // released/restricted are doc-keyed: { docId: [partyIds] }.
         st.released[docId] = st.released[docId] || [];
         if (st.released[docId].indexOf(row.partyId) === -1) st.released[docId].push(row.partyId);
-        st.pending[docId] = false;
+        // pending stays true: parties outside the release keep the
+        // "not yet released" gate and reason.
       });
       var p = party(row.partyId);
       if (isBank(p) && p.status === 'invited') { p.status = 'nda_signed'; p.committed = false; }
@@ -470,11 +471,15 @@
     if (!found && /\bnordwall\b/.test(t)) found = party('bank-a');
     return found;
   }
+  var STOPWORDS = { the: 1, and: 1, for: 1, with: 1, all: 1, every: 1, everyone: 1, can: 1, see: 1, who: 1, what: 1, why: 1, has: 1, does: 1, not: 1, no: 1, release: 1, grant: 1, share: 1, publish: 1, restrict: 1, revoke: 1, remove: 1, access: 1, room: 1, to: 1, of: 1, in: 1, on: 1, it: 1, is: 1, are: 1, me: 1, we: 1, now: 1, too: 1, please: 1, new: 1, update: 1, updated: 1, latest: 1, once: 1, signed: 1 };
   function docCandidates(t) {
-    var tokens = t.split(/\s+/).filter(function (tok) { return tok.length > 2; });
+    var tokens = t.split(/\s+/).filter(function (tok) { return tok.length > 2 && !STOPWORDS[tok]; });
+    var bigrams = [];
+    for (var i = 0; i < tokens.length - 1; i++) bigrams.push(tokens[i] + ' ' + tokens[i + 1]);
     return DOCS.map(function (d) {
       var name = d.name.toLowerCase();
       var score = tokens.reduce(function (s, tok) { return s + (name.indexOf(tok) !== -1 ? 1 : 0); }, 0);
+      score += bigrams.reduce(function (s, bg) { return s + (name.indexOf(bg) !== -1 ? 2 : 0); }, 0);
       if (/new|update|latest|updated/.test(t) && name.indexOf('update') !== -1) score += 2;
       if (d.status === 'current') score += 0.5;
       return { d: d, score: score };
@@ -671,12 +676,19 @@
       throw e;
     });
   }
+  // The backend validator wants partyIds only for specific-scope actions.
+  function wireAction(action) {
+    var out = { type: action.type, docIds: action.docIds || [] };
+    out.partyScope = action.partyScope || 'committed';
+    if (out.partyScope === 'specific') out.partyIds = action.partyIds || [];
+    return out;
+  }
   var api = {
     getDeal: function () { return call('/api/deal', function () { return dealPayload(); }); },
     getAccess: function () { return call('/api/access', function () { return accessPayload(); }); },
     getLog: function () { return call('/api/log', function () { return logPayload(); }); },
-    apply: function (action) { return call('/api/apply', function (b) { return applyAction(b && b.action ? b.action : b); }, { action: action }); },
-    preview: function (action) { return call('/api/preview', function (b) { return computePreview(b && b.action ? b.action : b); }, { action: action }); },
+    apply: function (action) { return call('/api/apply', function (b) { return applyAction(b && b.action ? b.action : b); }, { action: wireAction(action) }); },
+    preview: function (action) { return call('/api/preview', function (b) { return computePreview(b && b.action ? b.action : b); }, { action: wireAction(action) }); },
     chat: function (text, convId) {
       return call('/api/chat', function (body) { return { conversationId: CONV_ID, reply: chat(body.text) }; }, { text: text, conversationId: convId || CONV_ID });
     },
@@ -853,7 +865,7 @@
       var declined = p.state === 'declined';
       html += '<tr class="' + (declined ? 'row-declined' : '') + '">';
       html += '<th class="party-cell"><div class="party-name">' + esc(p.name) + '</div>' +
-        '<div class="party-sub">' + (p.ticketEur ? 'EUR ' + p.ticketEur + 'm ticket' : (p.role === 'case_owner' ? 'EUR 50m hold' : '&nbsp;')) + '</div>' +
+        '<div class="party-sub">' + (p.ticketEur ? 'EUR ' + (p.ticketEur >= 1000000 ? (p.ticketEur / 1000000) + 'm' : p.ticketEur) + ' ticket' : (p.role === 'case_owner' ? 'EUR 50m hold' : '&nbsp;')) + '</div>' +
         '<div class="party-chips">' + stateChip(p) + partyFlags(p) + '</div></th>';
       folders.forEach(function (f) {
         var docs = DOCS.filter(function (d) { return d.group === f.id; });
