@@ -76,6 +76,20 @@ answer | clarification}`); the permission engine below it does not change.
 Conversation memory is minimal per spec (current draft + last topic per
 `conversationId`, in-process).
 
+An optional LLM fallback catches free-form intents the parser misses (set
+`ANTHROPIC_AUTH_TOKEN`, optionally `ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL`).
+Its prompt is **draft-first** (release/share/send intents always become a
+decision-draft, never a clarification), carries the real parties, documents
+**and pending actions**, and any clarification it does ask for comes with
+options that are full actionable phrasings. Model drafts are validated and
+re-computed through the same deterministic engine; hallucinated ids are
+dropped. Without the key, the server runs entirely on the deterministic
+layer.
+
+The change log opens with the deal's history seeded (Q&A release, rent-roll
+release, land-register update, Fjord's dropout, Alpenland's NDA) — seeded
+only into a fresh state dir, so restarts never duplicate it.
+
 ## Structure
 
 ```

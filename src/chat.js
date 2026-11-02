@@ -108,6 +108,7 @@ export function createChat(idx, deps) {
       '{"kind":"clarification","text":"one short question","options":["full imperative phrasing 1","full imperative phrasing 2"]}',
       '',
       'DRAFT FIRST: whenever the analyst wants to release, share, grant, send or publish documents, you MUST return kind=decision-draft with the best-matching docIds and partyScope from the lists below — never a clarification when any match exists. A clarification is only allowed when no document or no audience can be determined.',
+      '"banks still in the deal" / "the syndicate" / "everyone who committed" means partyScope:"committed" — not a specific bank.',
       'Use real ids ONLY from the lists. Never draft restrict actions. Never include borrower or declined parties in grants. "committed" means partyScope:"committed" (it includes NDA-signed parties). If the message ties the grant to an NDA signature, note it in text.',
       'When you DO return a clarification, every option must be a full actionable phrasing that by itself resolves to a real intent, e.g. "Release the updated valuation (d-038) to everyone committed".',
       `PARTIES: ${partyLine}`,
@@ -121,9 +122,16 @@ export function createChat(idx, deps) {
       const r = await fetch(`${base}/v1/messages`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
-        // thinking models spend budget on a thinking block first — give the
-        // JSON draft room after it
-        body: JSON.stringify({ model, max_tokens: 2000, system: sys, messages: [{ role: 'user', content: text }] }),
+        body: JSON.stringify({
+          model,
+          max_tokens: 1000,
+          // the intent layer is a routing task, not a reasoning one — and on
+          // thinking-capable models an enabled thinking block can eat the
+          // entire token budget before any reply text is produced
+          thinking: { type: 'disabled' },
+          system: sys,
+          messages: [{ role: 'user', content: text }],
+        }),
         signal: ctrl.signal,
       });
       clearTimeout(timer);
