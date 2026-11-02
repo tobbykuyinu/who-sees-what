@@ -1,0 +1,1862 @@
+{
+  "_note": "Fiktive Mockdaten für eine Interviewaufgabe. Alle Namen, Zahlen und Dokumente sind erfunden. / Fictional mock data for an interview exercise. All names, figures and documents are invented.",
+  "deal": {
+    "name": {
+      "de": "Hafenkante Quartier – Konsortialfinanzierung",
+      "en": "Hafenkante Quartier – Syndicated Financing"
+    },
+    "description": {
+      "de": "Refinanzierung eines gemischt genutzten Büro- und Einzelhandelsobjekts (Baujahr 2020) durch ein Bankenkonsortium. Die Arrangeurbank stellt den Datenraum bereit und syndiziert 95 Mio. EUR der Gesamtfinanzierung an Konsortialbanken.",
+      "en": "Refinancing of a mixed-use office and retail property (built 2020) by a lending syndicate. The arranger bank provides the data room and syndicates EUR 95m of the total facility to participating banks."
+    },
+    "amount_eur": 145000000,
+    "arranger_hold_eur": 50000000,
+    "loan_type": {
+      "de": "Gewerbliche Immobilienfinanzierung",
+      "en": "Commercial real estate financing"
+    },
+    "tenor_years": 5,
+    "property": {
+      "type": {
+        "de": "Büro mit Einzelhandel im Erdgeschoss",
+        "en": "Office with ground-floor retail"
+      },
+      "city": "Hamburg",
+      "address": "Hafenkante 12–16 (fiktiv / fictional)",
+      "lettable_area_sqm": 24800,
+      "parking_spaces": 140,
+      "occupancy_rate": 0.93,
+      "annual_rent_eur": 9650000,
+      "market_value_eur": 219500000
+    },
+    "arranger": "bank-a",
+    "borrower": "borrower",
+    "phases": [
+      {
+        "id": "teaser",
+        "name": {
+          "de": "Teaser",
+          "en": "Teaser"
+        },
+        "from": "2026-06-24"
+      },
+      {
+        "id": "nda",
+        "name": {
+          "de": "NDA / Due Diligence",
+          "en": "NDA / due diligence"
+        },
+        "from": "2026-07-01"
+      },
+      {
+        "id": "commitment",
+        "name": {
+          "de": "Zusage / Dokumentation",
+          "en": "Commitment / documentation"
+        },
+        "from": "2026-09-15"
+      },
+      {
+        "id": "signing",
+        "name": {
+          "de": "Signing",
+          "en": "Signing"
+        },
+        "from": "2026-10-30",
+        "planned": true
+      }
+    ]
+  },
+  "parties": [
+    {
+      "id": "bank-a",
+      "name": "Nordwall Bank AG",
+      "role": "case_owner",
+      "status": "committed",
+      "ticket_eur": 50000000,
+      "notes": "Arrangeur und Agent, Datenrauminhaber / Arranger and agent, data room owner"
+    },
+    {
+      "id": "bank-b",
+      "name": "Rheintal Landesbank",
+      "role": "participant",
+      "status": "committed",
+      "ticket_eur": 40000000,
+      "notes": "Zusage am 26.09. / Committed on 26 Sep"
+    },
+    {
+      "id": "bank-c",
+      "name": "Elbmarsch Kreditbank eG",
+      "role": "participant",
+      "status": "committed",
+      "ticket_eur": 30000000,
+      "notes": "Zusage nur mit Side Letter (Sonderkündigungsrecht, Quartalsreporting) / Committed only with a side letter (special termination right, quarterly reporting)"
+    },
+    {
+      "id": "bank-d",
+      "name": "Alpenland Hypothekenbank AG",
+      "role": "participant",
+      "status": "nda_signed",
+      "ticket_eur": 25000000,
+      "notes": "Prüft noch, Ticket angefragt, Entscheidung nach aktualisiertem Gutachten / Still reviewing, ticket requested, decision after updated valuation"
+    },
+    {
+      "id": "bank-e",
+      "name": "Fjord Pfandbrief Bank",
+      "role": "participant",
+      "status": "declined",
+      "notes": "NDA unterzeichnet, hatte Zugriff auf IM und Mieterliste v1, am 19.08. abgesagt / Signed NDA, had access to IM and rent roll v1, declined on 19 Aug"
+    },
+    {
+      "id": "bank-f",
+      "name": "Mainufer Privatbank KGaA",
+      "role": "participant",
+      "status": "invited",
+      "notes": "Kennt nur den Teaser, NDA noch offen / Has seen the teaser only, NDA outstanding"
+    },
+    {
+      "id": "borrower",
+      "name": "Hafenkante Objekt GmbH & Co. KG",
+      "role": "borrower",
+      "status": "committed",
+      "notes": "Objektgesellschaft, lädt Objekt- und Mieterunterlagen hoch / Property SPV, uploads property and tenant documents"
+    },
+    {
+      "id": "sponsor",
+      "name": "Lagune Real Estate Partners",
+      "role": "sponsor",
+      "status": "committed",
+      "notes": "Gesellschafter des Kreditnehmers / Shareholder of the borrower"
+    },
+    {
+      "id": "advisor-valuer",
+      "name": "Kessler Immobilienbewertung",
+      "role": "appraiser",
+      "status": "committed",
+      "notes": "Externer Gutachter / External valuer"
+    },
+    {
+      "id": "advisor-legal",
+      "name": "Brandt Wieck Rechtsanwälte",
+      "role": "legal_advisor",
+      "status": "committed",
+      "notes": "Rechtsberater der Banken / Lenders' legal counsel"
+    },
+    {
+      "id": "advisor-tech",
+      "name": "Ostwerk Ingenieure",
+      "role": "collaborator",
+      "status": "committed",
+      "notes": "Technischer Berater / Technical advisor"
+    }
+  ],
+  "labels": {
+    "status": {
+      "invited": {
+        "de": "Eingeladen (Teaser)",
+        "en": "Invited (teaser)"
+      },
+      "nda_signed": {
+        "de": "NDA unterschrieben",
+        "en": "NDA signed"
+      },
+      "committed": {
+        "de": "Zugesagt",
+        "en": "Committed"
+      },
+      "declined": {
+        "de": "Abgesagt / ausgestiegen",
+        "en": "Declined / dropped out"
+      }
+    },
+    "role": {
+      "appraiser": {
+        "de": "Gutachter",
+        "en": "Appraiser"
+      },
+      "borrower": {
+        "de": "Kreditnehmer",
+        "en": "Borrower"
+      },
+      "case_owner": {
+        "de": "Fallinhaber (Arrangeur)",
+        "en": "Case owner (arranger)"
+      },
+      "collaborator": {
+        "de": "Mitwirkender",
+        "en": "Collaborator"
+      },
+      "legal_advisor": {
+        "de": "Rechtsberater",
+        "en": "Legal advisor"
+      },
+      "participant": {
+        "de": "Teilnehmer (Konsortialbank)",
+        "en": "Participant (syndicate bank)"
+      },
+      "sponsor": {
+        "de": "Sponsor",
+        "en": "Sponsor"
+      }
+    },
+    "sensitivity": {
+      "public": {
+        "de": "Unkritisch",
+        "en": "Non-sensitive"
+      },
+      "confidential": {
+        "de": "Vertraulich",
+        "en": "Confidential"
+      },
+      "strictly_confidential": {
+        "de": "Streng vertraulich",
+        "en": "Strictly confidential"
+      },
+      "bank_specific": {
+        "de": "Bankindividuell",
+        "en": "Bank-specific"
+      },
+      "internal": {
+        "de": "Intern (Arrangeur)",
+        "en": "Internal (arranger)"
+      }
+    },
+    "document_status": {
+      "current": {
+        "de": "Aktuell",
+        "en": "Current"
+      },
+      "superseded": {
+        "de": "Ersetzt",
+        "en": "Superseded"
+      }
+    }
+  },
+  "folders": [
+    {
+      "id": "f-01",
+      "name": {
+        "de": "Teaser & Transaktionsübersicht",
+        "en": "Teaser & Transaction Overview"
+      },
+      "documents": [
+        {
+          "id": "d-001",
+          "name": {
+            "de": "Teaser Hafenkante Quartier",
+            "en": "Teaser Hafenkante Quartier"
+          },
+          "type": {
+            "de": "Projektunterlagen",
+            "en": "Project documents"
+          },
+          "category_key": "projectDocuments",
+          "file": "Teaser_Hafenkante_2026-06.pdf",
+          "version": 2,
+          "updated": "2026-06-24",
+          "sensitivity": "public",
+          "uploaded_by": "bank-a",
+          "note": "Anonymisierte Kurzbeschreibung, ohne Mieternamen / Anonymised summary without tenant names",
+          "status": "current"
+        },
+        {
+          "id": "d-002",
+          "name": {
+            "de": "Transaktionszeitplan Syndizierung",
+            "en": "Syndication timetable"
+          },
+          "type": {
+            "de": "Allgemeine Informationen",
+            "en": "General information"
+          },
+          "category_key": "generalInformation",
+          "file": "Zeitplan_Syndizierung.pdf",
+          "version": 3,
+          "updated": "2026-09-02",
+          "sensitivity": "public",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-003",
+          "name": {
+            "de": "Einladungsschreiben an Konsortialbanken",
+            "en": "Invitation letter to participating banks"
+          },
+          "type": {
+            "de": "Allgemeine Informationen",
+            "en": "General information"
+          },
+          "category_key": "generalInformation",
+          "file": "Einladung_Konsortium_2026-06.pdf",
+          "version": 1,
+          "updated": "2026-06-25",
+          "sensitivity": "public",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-02",
+      "name": {
+        "de": "Vertraulichkeitsvereinbarungen (NDA)",
+        "en": "Confidentiality Agreements (NDA)"
+      },
+      "documents": [
+        {
+          "id": "d-004",
+          "name": {
+            "de": "NDA-Muster",
+            "en": "NDA template"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "NDA_Muster_Hafenkante.docx",
+          "version": 1,
+          "updated": "2026-06-20",
+          "sensitivity": "public",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-005",
+          "name": {
+            "de": "NDA unterzeichnet – Rheintal Landesbank",
+            "en": "Signed NDA – Rheintal Landesbank"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "NDA_signed_Rheintal_LB.pdf",
+          "version": 1,
+          "updated": "2026-07-01",
+          "sensitivity": "bank_specific",
+          "uploaded_by": "bank-b",
+          "concerns_party": "bank-b",
+          "status": "current"
+        },
+        {
+          "id": "d-006",
+          "name": {
+            "de": "NDA unterzeichnet – Elbmarsch Kreditbank",
+            "en": "Signed NDA – Elbmarsch Kreditbank"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "NDA_signed_Elbmarsch_KB.pdf",
+          "version": 1,
+          "updated": "2026-07-03",
+          "sensitivity": "bank_specific",
+          "uploaded_by": "bank-c",
+          "concerns_party": "bank-c",
+          "status": "current"
+        },
+        {
+          "id": "d-007",
+          "name": {
+            "de": "NDA unterzeichnet – Alpenland Hypothekenbank",
+            "en": "Signed NDA – Alpenland Hypothekenbank"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "NDA_signed_Alpenland_HB.pdf",
+          "version": 1,
+          "updated": "2026-07-09",
+          "sensitivity": "bank_specific",
+          "uploaded_by": "bank-d",
+          "concerns_party": "bank-d",
+          "status": "current"
+        },
+        {
+          "id": "d-008",
+          "name": {
+            "de": "NDA unterzeichnet – Fjord Pfandbrief Bank",
+            "en": "Signed NDA – Fjord Pfandbrief Bank"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "NDA_signed_Fjord_PB.pdf",
+          "version": 1,
+          "updated": "2026-07-04",
+          "sensitivity": "bank_specific",
+          "uploaded_by": "bank-e",
+          "concerns_party": "bank-e",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-03",
+      "name": {
+        "de": "Informationsmemorandum & Finanzierungsstruktur",
+        "en": "Information Memorandum & Financing Structure"
+      },
+      "documents": [
+        {
+          "id": "d-009",
+          "name": {
+            "de": "Informationsmemorandum",
+            "en": "Information memorandum"
+          },
+          "type": {
+            "de": "Projektunterlagen",
+            "en": "Project documents"
+          },
+          "category_key": "projectDocuments",
+          "file": "Informationsmemorandum_Hafenkante_v2.pdf",
+          "version": 2,
+          "updated": "2026-07-15",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-010",
+          "name": {
+            "de": "Indikatives Term Sheet",
+            "en": "Indicative term sheet"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Term_Sheet_indikativ_2026-06.pdf",
+          "version": 1,
+          "updated": "2026-06-30",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "superseded",
+          "superseded_by": "d-011"
+        },
+        {
+          "id": "d-011",
+          "name": {
+            "de": "Term Sheet (finale Fassung)",
+            "en": "Term sheet (final)"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Term_Sheet_final_2026-08.pdf",
+          "version": 3,
+          "updated": "2026-08-28",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "supersedes": "d-010",
+          "status": "current"
+        },
+        {
+          "id": "d-012",
+          "name": {
+            "de": "Cashflow-Modell (Bankcase)",
+            "en": "Cash flow model (bank case)"
+          },
+          "type": {
+            "de": "Liquiditätsplanung",
+            "en": "Liquidity calculations"
+          },
+          "category_key": "liquidityCalculations",
+          "file": "Cashflow_Modell_Bankcase.xlsx",
+          "version": 4,
+          "updated": "2026-09-10",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-013",
+          "name": {
+            "de": "Finanzierungs- und Tranchenstruktur",
+            "en": "Financing and tranche structure"
+          },
+          "type": {
+            "de": "Allgemeine Informationen",
+            "en": "General information"
+          },
+          "category_key": "generalInformation",
+          "file": "Finanzierungsstruktur_Tranchen.pdf",
+          "version": 2,
+          "updated": "2026-08-28",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-014",
+          "name": {
+            "de": "Investitions- und Kostenaufstellung",
+            "en": "Sources and uses"
+          },
+          "type": {
+            "de": "Liquiditätsplanung",
+            "en": "Liquidity calculations"
+          },
+          "category_key": "liquidityCalculations",
+          "file": "Mittelverwendung_Mittelherkunft.xlsx",
+          "version": 2,
+          "updated": "2026-07-15",
+          "sensitivity": "confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-04",
+      "name": {
+        "de": "Objektdaten",
+        "en": "Property Data"
+      },
+      "children": [
+        {
+          "id": "f-04-01",
+          "name": {
+            "de": "Grundbuch & Kataster",
+            "en": "Land Register & Cadastre"
+          },
+          "documents": [
+            {
+              "id": "d-016",
+              "name": {
+                "de": "Grundbuchauszug Blatt 4711",
+                "en": "Land register extract, folio 4711"
+              },
+              "type": {
+                "de": "Grundbuchauszüge",
+                "en": "Land register extracts"
+              },
+              "category_key": "landRegisterExtracts",
+              "file": "Grundbuchauszug_Blatt4711_2026-06.pdf",
+              "version": 1,
+              "updated": "2026-06-18",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "superseded",
+              "superseded_by": "d-017"
+            },
+            {
+              "id": "d-017",
+              "name": {
+                "de": "Grundbuchauszug Blatt 4711 (aktualisiert)",
+                "en": "Land register extract, folio 4711 (updated)"
+              },
+              "type": {
+                "de": "Grundbuchauszüge",
+                "en": "Land register extracts"
+              },
+              "category_key": "landRegisterExtracts",
+              "file": "Grundbuchauszug_Blatt4711_2026-09.pdf",
+              "version": 2,
+              "updated": "2026-09-08",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "supersedes": "d-016",
+              "status": "current"
+            },
+            {
+              "id": "d-018",
+              "name": {
+                "de": "Flurkarte und Lageplan",
+                "en": "Cadastral map and site plan"
+              },
+              "type": {
+                "de": "Grundrisse, Flurkarten",
+                "en": "Floor plans, parcel maps"
+              },
+              "category_key": "floorPlansParcelMaps",
+              "file": "Flurkarte_Lageplan.pdf",
+              "version": 1,
+              "updated": "2026-06-18",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-019",
+              "name": {
+                "de": "Baulastenverzeichnis und Altlastenauskunft",
+                "en": "Building encumbrances and contamination register"
+              },
+              "type": {
+                "de": "Baulasten / Altlastenkataster",
+                "en": "Building encumbrances / register of contaminated sites"
+              },
+              "category_key": "buildingEncumbrances",
+              "file": "Baulasten_Altlastenauskunft.pdf",
+              "version": 1,
+              "updated": "2026-07-02",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            }
+          ]
+        },
+        {
+          "id": "f-04-02",
+          "name": {
+            "de": "Pläne & Fotos",
+            "en": "Plans & Photos"
+          },
+          "documents": [
+            {
+              "id": "d-020",
+              "name": {
+                "de": "Grundrisse EG–6. OG",
+                "en": "Floor plans ground to 6th floor"
+              },
+              "type": {
+                "de": "Grundrisse, Flurkarten",
+                "en": "Floor plans, parcel maps"
+              },
+              "category_key": "floorPlansParcelMaps",
+              "file": "Grundrisse_EG-6OG.pdf",
+              "version": 1,
+              "updated": "2026-06-28",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-021",
+              "name": {
+                "de": "Flächenaufstellung nach gif",
+                "en": "Area schedule (gif standard)"
+              },
+              "type": {
+                "de": "Objektunterlagen",
+                "en": "Property documents"
+              },
+              "category_key": "propertyDocuments",
+              "file": "Flaechenaufstellung_gif.xlsx",
+              "version": 2,
+              "updated": "2026-07-20",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-022",
+              "name": {
+                "de": "Objektfotos",
+                "en": "Property photos"
+              },
+              "type": {
+                "de": "Objektfotos",
+                "en": "Property pictures"
+              },
+              "category_key": "propertyPictures",
+              "file": "Objektfotos_Hafenkante.zip",
+              "version": 1,
+              "updated": "2026-06-28",
+              "sensitivity": "public",
+              "uploaded_by": "borrower",
+              "status": "current"
+            }
+          ]
+        },
+        {
+          "id": "f-04-03",
+          "name": {
+            "de": "Baurecht & Genehmigungen",
+            "en": "Planning & Permits"
+          },
+          "documents": [
+            {
+              "id": "d-023",
+              "name": {
+                "de": "Baugenehmigung",
+                "en": "Building permit"
+              },
+              "type": {
+                "de": "Objektunterlagen",
+                "en": "Property documents"
+              },
+              "category_key": "propertyDocuments",
+              "file": "Baugenehmigung_2019.pdf",
+              "version": 1,
+              "updated": "2026-06-28",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-024",
+              "name": {
+                "de": "Energieausweis",
+                "en": "Energy performance certificate"
+              },
+              "type": {
+                "de": "Objektunterlagen",
+                "en": "Property documents"
+              },
+              "category_key": "propertyDocuments",
+              "file": "Energieausweis_2025.pdf",
+              "version": 1,
+              "updated": "2026-06-28",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            }
+          ]
+        }
+      ],
+      "documents": [
+        {
+          "id": "d-015",
+          "name": {
+            "de": "Objektbeschreibung",
+            "en": "Property description"
+          },
+          "type": {
+            "de": "Objektunterlagen",
+            "en": "Property documents"
+          },
+          "category_key": "propertyDocuments",
+          "file": "Objektbeschreibung_Hafenkante.pdf",
+          "version": 1,
+          "updated": "2026-06-28",
+          "sensitivity": "confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-05",
+      "name": {
+        "de": "Mieter",
+        "en": "Tenants"
+      },
+      "children": [
+        {
+          "id": "f-05-01",
+          "name": {
+            "de": "Mietverträge",
+            "en": "Lease Agreements"
+          },
+          "documents": [
+            {
+              "id": "d-029",
+              "name": {
+                "de": "Mietvertrag Ankermieter Büro (Ebenen 1–3)",
+                "en": "Lease anchor office tenant (floors 1–3)"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Ankermieter_Buero.pdf",
+              "version": 1,
+              "updated": "2026-07-01",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-030",
+              "name": {
+                "de": "1. Nachtrag Mietvertrag Ankermieter",
+                "en": "1st addendum anchor tenant lease"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Ankermieter_Nachtrag1.pdf",
+              "version": 1,
+              "updated": "2026-07-01",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-031",
+              "name": {
+                "de": "Mietvertrag Lebensmittelmarkt EG",
+                "en": "Lease supermarket ground floor"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Lebensmittelmarkt_EG.pdf",
+              "version": 1,
+              "updated": "2026-07-01",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-032",
+              "name": {
+                "de": "Mietvertrag Gastronomie EG",
+                "en": "Lease restaurant ground floor"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Gastronomie_EG.pdf",
+              "version": 1,
+              "updated": "2026-07-01",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-033",
+              "name": {
+                "de": "Kündigungsschreiben Gastronomie",
+                "en": "Termination notice restaurant"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "Kuendigung_Gastronomie_2026-08.pdf",
+              "version": 1,
+              "updated": "2026-09-05",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-034",
+              "name": {
+                "de": "Mietvertrag Büro 4. OG (Neuvermietung)",
+                "en": "Lease office 4th floor (new letting)"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Buero_4OG_2026.pdf",
+              "version": 1,
+              "updated": "2026-09-12",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-035",
+              "name": {
+                "de": "Mietverträge Kleinflächen (Sammeldatei)",
+                "en": "Leases small units (bundle)"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Kleinflaechen_Sammlung.pdf",
+              "version": 1,
+              "updated": "2026-07-01",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            },
+            {
+              "id": "d-036",
+              "name": {
+                "de": "Stellplatzmietverträge",
+                "en": "Parking leases"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "MV_Stellplaetze.pdf",
+              "version": 1,
+              "updated": "2026-07-01",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            }
+          ]
+        }
+      ],
+      "documents": [
+        {
+          "id": "d-025",
+          "name": {
+            "de": "Mieterliste (Rent Roll)",
+            "en": "Rent roll"
+          },
+          "type": {
+            "de": "Mieteinnahmen",
+            "en": "Rental income"
+          },
+          "category_key": "rentalIncome",
+          "file": "Mieterliste_2026-06.xlsx",
+          "version": 1,
+          "updated": "2026-06-30",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "status": "superseded",
+          "superseded_by": "d-026",
+          "note": "Enthält Mieternamen und Einzelmieten / Contains tenant names and individual rents"
+        },
+        {
+          "id": "d-026",
+          "name": {
+            "de": "Mieterliste (Rent Roll), Stand September",
+            "en": "Rent roll, September"
+          },
+          "type": {
+            "de": "Mieteinnahmen",
+            "en": "Rental income"
+          },
+          "category_key": "rentalIncome",
+          "file": "Mieterliste_2026-09.xlsx",
+          "version": 2,
+          "updated": "2026-09-14",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "supersedes": "d-025",
+          "note": "Neuer Mieter 4. OG, Kündigung Gastronomie EG / New tenant 4th floor, restaurant lease terminated",
+          "status": "current"
+        },
+        {
+          "id": "d-027",
+          "name": {
+            "de": "Mieteingangsnachweise 2025",
+            "en": "Rent receipts 2025"
+          },
+          "type": {
+            "de": "Mieteinnahmen",
+            "en": "Rental income"
+          },
+          "category_key": "rentalIncome",
+          "file": "Mieteingaenge_2025.xlsx",
+          "version": 1,
+          "updated": "2026-07-10",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-028",
+          "name": {
+            "de": "Bonitätsauskünfte Ankermieter",
+            "en": "Credit reports anchor tenants"
+          },
+          "type": {
+            "de": "Bonität",
+            "en": "Creditworthiness"
+          },
+          "category_key": "creditworthiness",
+          "file": "Bonitaet_Ankermieter.pdf",
+          "version": 1,
+          "updated": "2026-07-22",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "bank-a",
+          "note": "Vom Kreditnehmer nur zur Einsicht freigegeben / Borrower allows view only",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-06",
+      "name": {
+        "de": "Bewertung & Markt",
+        "en": "Valuation & Market"
+      },
+      "documents": [
+        {
+          "id": "d-037",
+          "name": {
+            "de": "Wertgutachten (Marktwert)",
+            "en": "Valuation report (market value)"
+          },
+          "type": {
+            "de": "Wertgutachten",
+            "en": "Valuations / appraisals"
+          },
+          "category_key": "valuationsAppraisals",
+          "file": "Wertgutachten_Hafenkante_2026-05.pdf",
+          "version": 1,
+          "updated": "2026-06-27",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-valuer",
+          "status": "superseded",
+          "superseded_by": "d-038",
+          "note": "Marktwert 228,0 Mio. EUR / Market value EUR 228.0m"
+        },
+        {
+          "id": "d-038",
+          "name": {
+            "de": "Wertgutachten (Marktwert), Aktualisierung",
+            "en": "Valuation report (market value), update"
+          },
+          "type": {
+            "de": "Wertgutachten",
+            "en": "Valuations / appraisals"
+          },
+          "category_key": "valuationsAppraisals",
+          "file": "Wertgutachten_Hafenkante_2026-09_Update.pdf",
+          "version": 2,
+          "updated": "2026-09-18",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-valuer",
+          "supersedes": "d-037",
+          "note": "Marktwert 219,5 Mio. EUR nach Kündigung Gastronomie, LTV steigt von 63,6 % auf 66,1 % / Market value EUR 219.5m after restaurant termination, LTV rises from 63.6% to 66.1%",
+          "status": "current"
+        },
+        {
+          "id": "d-039",
+          "name": {
+            "de": "Beleihungswertgutachten",
+            "en": "Mortgage lending value report"
+          },
+          "type": {
+            "de": "Wertgutachten",
+            "en": "Valuations / appraisals"
+          },
+          "category_key": "valuationsAppraisals",
+          "file": "Beleihungswert_Hafenkante.pdf",
+          "version": 1,
+          "updated": "2026-07-30",
+          "sensitivity": "internal",
+          "uploaded_by": "bank-a",
+          "note": "Nur für die Kreditentscheidung des Arrangeurs / Arranger credit decision only",
+          "status": "current"
+        },
+        {
+          "id": "d-040",
+          "name": {
+            "de": "Reliance Letter des Gutachters",
+            "en": "Valuer reliance letter"
+          },
+          "type": {
+            "de": "Ergänzende Bewertungsunterlagen",
+            "en": "Supplementary valuation documents"
+          },
+          "category_key": "supplementaryValuationDocuments",
+          "file": "Reliance_Letter_Gutachter.pdf",
+          "version": 1,
+          "updated": "2026-09-20",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-valuer",
+          "status": "current"
+        },
+        {
+          "id": "d-041",
+          "name": {
+            "de": "Marktbericht Büro Hamburg",
+            "en": "Office market report Hamburg"
+          },
+          "type": {
+            "de": "Markt- und Brancheninformationen",
+            "en": "Market and industry information"
+          },
+          "category_key": "industryInformation",
+          "file": "Marktbericht_Buero_Hamburg_Q2.pdf",
+          "version": 1,
+          "updated": "2026-07-15",
+          "sensitivity": "public",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-07",
+      "name": {
+        "de": "Kreditnehmer & Sponsor",
+        "en": "Borrower & Sponsor"
+      },
+      "documents": [
+        {
+          "id": "d-042",
+          "name": {
+            "de": "Gesellschafterstruktur",
+            "en": "Shareholder structure chart"
+          },
+          "type": {
+            "de": "HR-Auszüge, Gesellschafter",
+            "en": "Commercial register extracts, shareholders"
+          },
+          "category_key": "hrExtractsShareholdersLegal",
+          "file": "Gesellschafterstruktur.pdf",
+          "version": 1,
+          "updated": "2026-07-01",
+          "sensitivity": "confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-043",
+          "name": {
+            "de": "Handelsregisterauszug Objektgesellschaft",
+            "en": "Commercial register extract borrower SPV"
+          },
+          "type": {
+            "de": "HR-Auszüge, Gesellschafter",
+            "en": "Commercial register extracts, shareholders"
+          },
+          "category_key": "hrExtractsShareholdersLegal",
+          "file": "HR_Auszug_Objektgesellschaft.pdf",
+          "version": 1,
+          "updated": "2026-07-01",
+          "sensitivity": "confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-044",
+          "name": {
+            "de": "Gesellschaftsvertrag Objektgesellschaft",
+            "en": "Articles of association borrower SPV"
+          },
+          "type": {
+            "de": "Gesellschaftsvertrag",
+            "en": "Articles of association"
+          },
+          "category_key": "articlesOfAssociationLegal",
+          "file": "Gesellschaftsvertrag_Objekt_KG.pdf",
+          "version": 1,
+          "updated": "2026-07-01",
+          "sensitivity": "confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-045",
+          "name": {
+            "de": "Jahresabschluss 2024 Objektgesellschaft",
+            "en": "Financial statements 2024 borrower SPV"
+          },
+          "type": {
+            "de": "Jahresabschlüsse / GuV",
+            "en": "Annual financial statements / P&L"
+          },
+          "category_key": "annualFinancialStatements",
+          "file": "JA_2024_Objektgesellschaft.pdf",
+          "version": 1,
+          "updated": "2026-07-05",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-046",
+          "name": {
+            "de": "Jahresabschluss 2025 Objektgesellschaft",
+            "en": "Financial statements 2025 borrower SPV"
+          },
+          "type": {
+            "de": "Jahresabschlüsse / GuV",
+            "en": "Annual financial statements / P&L"
+          },
+          "category_key": "annualFinancialStatements",
+          "file": "JA_2025_Objektgesellschaft.pdf",
+          "version": 1,
+          "updated": "2026-08-14",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-047",
+          "name": {
+            "de": "BWA Juni 2026",
+            "en": "Management accounts June 2026"
+          },
+          "type": {
+            "de": "BWA",
+            "en": "Management accounts (BWA)"
+          },
+          "category_key": "bwa",
+          "file": "BWA_2026-06.pdf",
+          "version": 1,
+          "updated": "2026-07-20",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        },
+        {
+          "id": "d-048",
+          "name": {
+            "de": "Konzernabschluss 2025 Sponsor",
+            "en": "Consolidated financial statements 2025 sponsor"
+          },
+          "type": {
+            "de": "Jahresabschlüsse / GuV",
+            "en": "Annual financial statements / P&L"
+          },
+          "category_key": "annualFinancialStatements",
+          "file": "Konzernabschluss_2025_Sponsor.pdf",
+          "version": 1,
+          "updated": "2026-08-14",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "sponsor",
+          "status": "current"
+        },
+        {
+          "id": "d-049",
+          "name": {
+            "de": "Track Record Sponsor",
+            "en": "Sponsor track record"
+          },
+          "type": {
+            "de": "Allgemeine Informationen",
+            "en": "General information"
+          },
+          "category_key": "generalInformation",
+          "file": "Track_Record_Sponsor.pdf",
+          "version": 1,
+          "updated": "2026-06-28",
+          "sensitivity": "confidential",
+          "uploaded_by": "sponsor",
+          "status": "current"
+        },
+        {
+          "id": "d-050",
+          "name": {
+            "de": "§18-KWG-Offenlegung",
+            "en": "§18 KWG disclosure package"
+          },
+          "type": {
+            "de": "§18-KWG-Unterlagen",
+            "en": "§18 KWG documentation"
+          },
+          "category_key": "kwgDocumentation",
+          "file": "KWG18_Offenlegung_2026.pdf",
+          "version": 1,
+          "updated": "2026-08-20",
+          "sensitivity": "strictly_confidential",
+          "uploaded_by": "borrower",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-08",
+      "name": {
+        "de": "Due Diligence",
+        "en": "Due Diligence"
+      },
+      "children": [
+        {
+          "id": "f-08-01",
+          "name": {
+            "de": "Technische Due Diligence",
+            "en": "Technical Due Diligence"
+          },
+          "documents": [
+            {
+              "id": "d-051",
+              "name": {
+                "de": "Technischer Due-Diligence-Bericht",
+                "en": "Technical due diligence report"
+              },
+              "type": {
+                "de": "Objektunterlagen",
+                "en": "Property documents"
+              },
+              "category_key": "propertyDocuments",
+              "file": "TDD_Bericht_Hafenkante.pdf",
+              "version": 1,
+              "updated": "2026-08-05",
+              "sensitivity": "confidential",
+              "uploaded_by": "advisor-tech",
+              "status": "current"
+            },
+            {
+              "id": "d-052",
+              "name": {
+                "de": "Instandhaltungs- und Capex-Planung (10 Jahre)",
+                "en": "Maintenance and capex plan (10 years)"
+              },
+              "type": {
+                "de": "Liquiditätsplanung",
+                "en": "Liquidity calculations"
+              },
+              "category_key": "liquidityCalculations",
+              "file": "Capex_Plan_10J.xlsx",
+              "version": 2,
+              "updated": "2026-08-21",
+              "sensitivity": "confidential",
+              "uploaded_by": "advisor-tech",
+              "status": "current"
+            },
+            {
+              "id": "d-053",
+              "name": {
+                "de": "ESG- und CRREM-Analyse",
+                "en": "ESG and CRREM analysis"
+              },
+              "type": {
+                "de": "Objektunterlagen",
+                "en": "Property documents"
+              },
+              "category_key": "propertyDocuments",
+              "file": "ESG_CRREM_Analyse.pdf",
+              "version": 1,
+              "updated": "2026-08-12",
+              "sensitivity": "confidential",
+              "uploaded_by": "advisor-tech",
+              "status": "current"
+            }
+          ]
+        },
+        {
+          "id": "f-08-02",
+          "name": {
+            "de": "Rechtliche Due Diligence",
+            "en": "Legal Due Diligence"
+          },
+          "documents": [
+            {
+              "id": "d-054",
+              "name": {
+                "de": "Legal Due Diligence Report (Red Flag)",
+                "en": "Legal due diligence report (red flag)"
+              },
+              "type": {
+                "de": "Verträge / Urkunden",
+                "en": "Contracts / deeds"
+              },
+              "category_key": "contractsDeeds",
+              "file": "LDD_RedFlag_Report.pdf",
+              "version": 1,
+              "updated": "2026-08-09",
+              "sensitivity": "confidential",
+              "uploaded_by": "advisor-legal",
+              "status": "current"
+            },
+            {
+              "id": "d-055",
+              "name": {
+                "de": "Mietvertragsanalyse (Lease Review)",
+                "en": "Lease review"
+              },
+              "type": {
+                "de": "Miet-/Pachtverträge",
+                "en": "Rental/lease agreements"
+              },
+              "category_key": "rentalLeaseAgreements",
+              "file": "Lease_Review_Hafenkante.xlsx",
+              "version": 2,
+              "updated": "2026-09-16",
+              "sensitivity": "strictly_confidential",
+              "uploaded_by": "advisor-legal",
+              "note": "Mieterbezogene Auswertung inkl. Schriftformmängeln / Tenant-level analysis incl. written-form defects",
+              "status": "current"
+            },
+            {
+              "id": "d-056",
+              "name": {
+                "de": "Kaufvertrag (Urkunde 2019)",
+                "en": "Purchase agreement (deed 2019)"
+              },
+              "type": {
+                "de": "Verträge / Urkunden",
+                "en": "Contracts / deeds"
+              },
+              "category_key": "contractsDeeds",
+              "file": "Kaufvertrag_UR_2019.pdf",
+              "version": 1,
+              "updated": "2026-07-02",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            }
+          ]
+        },
+        {
+          "id": "f-08-03",
+          "name": {
+            "de": "Steuern & Versicherung",
+            "en": "Tax & Insurance"
+          },
+          "documents": [
+            {
+              "id": "d-057",
+              "name": {
+                "de": "Steuer-Due-Diligence (Kurzbericht)",
+                "en": "Tax due diligence (short form)"
+              },
+              "type": {
+                "de": "Sonstige Informationen",
+                "en": "Other information"
+              },
+              "category_key": "otherInformation",
+              "file": "Tax_DD_Kurzbericht.pdf",
+              "version": 1,
+              "updated": "2026-08-11",
+              "sensitivity": "confidential",
+              "uploaded_by": "advisor-legal",
+              "status": "current"
+            },
+            {
+              "id": "d-058",
+              "name": {
+                "de": "Versicherungsnachweis Gebäude",
+                "en": "Building insurance certificate"
+              },
+              "type": {
+                "de": "Objektunterlagen",
+                "en": "Property documents"
+              },
+              "category_key": "propertyDocuments",
+              "file": "Versicherungsnachweis_2026.pdf",
+              "version": 1,
+              "updated": "2026-07-03",
+              "sensitivity": "confidential",
+              "uploaded_by": "borrower",
+              "status": "current"
+            }
+          ]
+        }
+      ],
+      "documents": []
+    },
+    {
+      "id": "f-09",
+      "name": {
+        "de": "Sicherheiten",
+        "en": "Collateral"
+      },
+      "documents": [
+        {
+          "id": "d-059",
+          "name": {
+            "de": "Sicherheitenkonzept",
+            "en": "Security package overview"
+          },
+          "type": {
+            "de": "Allgemeine Informationen",
+            "en": "General information"
+          },
+          "category_key": "generalInformation",
+          "file": "Sicherheitenkonzept.pdf",
+          "version": 2,
+          "updated": "2026-08-28",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-060",
+          "name": {
+            "de": "Entwurf Grundschuldbestellungsurkunde",
+            "en": "Draft land charge deed"
+          },
+          "type": {
+            "de": "Grundschuldbriefe",
+            "en": "Land charge letters"
+          },
+          "category_key": "landChargeLetters",
+          "file": "Entwurf_Grundschuldbestellung.docx",
+          "version": 2,
+          "updated": "2026-09-22",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "status": "current"
+        },
+        {
+          "id": "d-061",
+          "name": {
+            "de": "Entwurf Sicherungszweckerklärung",
+            "en": "Draft security purpose declaration"
+          },
+          "type": {
+            "de": "Sicherungszweckerklärungen",
+            "en": "Security purpose declarations"
+          },
+          "category_key": "gsDeclarationsOfPurpose",
+          "file": "Entwurf_Sicherungszweckerklaerung.docx",
+          "version": 1,
+          "updated": "2026-09-22",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "status": "current"
+        },
+        {
+          "id": "d-062",
+          "name": {
+            "de": "Entwurf Mietzessionsvertrag",
+            "en": "Draft assignment of rents"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Entwurf_Mietzession.docx",
+          "version": 1,
+          "updated": "2026-09-22",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-10",
+      "name": {
+        "de": "Kreditdokumentation",
+        "en": "Loan Documentation"
+      },
+      "children": [
+        {
+          "id": "f-10-01",
+          "name": {
+            "de": "Bankindividuelle Unterlagen",
+            "en": "Bank-specific Documents"
+          },
+          "documents": [
+            {
+              "id": "d-067",
+              "name": {
+                "de": "Commitment Letter – Rheintal Landesbank",
+                "en": "Commitment letter – Rheintal Landesbank"
+              },
+              "type": {
+                "de": "Verträge",
+                "en": "Contracts"
+              },
+              "category_key": "contracts",
+              "file": "Commitment_Rheintal_LB.pdf",
+              "version": 1,
+              "updated": "2026-09-26",
+              "sensitivity": "bank_specific",
+              "uploaded_by": "bank-b",
+              "concerns_party": "bank-b",
+              "status": "current"
+            },
+            {
+              "id": "d-068",
+              "name": {
+                "de": "Commitment Letter – Elbmarsch Kreditbank",
+                "en": "Commitment letter – Elbmarsch Kreditbank"
+              },
+              "type": {
+                "de": "Verträge",
+                "en": "Contracts"
+              },
+              "category_key": "contracts",
+              "file": "Commitment_Elbmarsch_KB.pdf",
+              "version": 1,
+              "updated": "2026-09-30",
+              "sensitivity": "bank_specific",
+              "uploaded_by": "bank-c",
+              "concerns_party": "bank-c",
+              "status": "current"
+            },
+            {
+              "id": "d-069",
+              "name": {
+                "de": "Fee Letter – Rheintal Landesbank",
+                "en": "Fee letter – Rheintal Landesbank"
+              },
+              "type": {
+                "de": "Verträge",
+                "en": "Contracts"
+              },
+              "category_key": "contracts",
+              "file": "Fee_Letter_Rheintal_LB.pdf",
+              "version": 1,
+              "updated": "2026-09-26",
+              "sensitivity": "bank_specific",
+              "uploaded_by": "bank-a",
+              "concerns_party": "bank-b",
+              "status": "current"
+            },
+            {
+              "id": "d-070",
+              "name": {
+                "de": "Fee Letter – Elbmarsch Kreditbank",
+                "en": "Fee letter – Elbmarsch Kreditbank"
+              },
+              "type": {
+                "de": "Verträge",
+                "en": "Contracts"
+              },
+              "category_key": "contracts",
+              "file": "Fee_Letter_Elbmarsch_KB.pdf",
+              "version": 1,
+              "updated": "2026-09-30",
+              "sensitivity": "bank_specific",
+              "uploaded_by": "bank-a",
+              "concerns_party": "bank-c",
+              "status": "current"
+            },
+            {
+              "id": "d-071",
+              "name": {
+                "de": "Side Letter – Elbmarsch Kreditbank (Sonderkündigungsrecht und Zusatzreporting)",
+                "en": "Side letter – Elbmarsch Kreditbank (special termination right and extra reporting)"
+              },
+              "type": {
+                "de": "Verträge",
+                "en": "Contracts"
+              },
+              "category_key": "contracts",
+              "file": "Side_Letter_Elbmarsch_KB.pdf",
+              "version": 1,
+              "updated": "2026-10-02",
+              "sensitivity": "bank_specific",
+              "uploaded_by": "bank-a",
+              "concerns_party": "bank-c",
+              "note": "Darf keine andere Konsortialbank sehen / Must not be visible to any other participating bank",
+              "status": "current"
+            }
+          ]
+        }
+      ],
+      "documents": [
+        {
+          "id": "d-063",
+          "name": {
+            "de": "Konsortialkreditvertrag, Entwurf 1",
+            "en": "Syndicated facility agreement, draft 1"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Konsortialkreditvertrag_Entwurf1.docx",
+          "version": 1,
+          "updated": "2026-08-30",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "status": "superseded",
+          "superseded_by": "d-064"
+        },
+        {
+          "id": "d-064",
+          "name": {
+            "de": "Konsortialkreditvertrag, Entwurf 2 (mit Änderungsmarkierung)",
+            "en": "Syndicated facility agreement, draft 2 (marked up)"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Konsortialkreditvertrag_Entwurf2_markup.docx",
+          "version": 2,
+          "updated": "2026-09-25",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "supersedes": "d-063",
+          "status": "superseded",
+          "superseded_by": "d-065"
+        },
+        {
+          "id": "d-065",
+          "name": {
+            "de": "Konsortialkreditvertrag, Entwurf 3",
+            "en": "Syndicated facility agreement, draft 3"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Konsortialkreditvertrag_Entwurf3.docx",
+          "version": 3,
+          "updated": "2026-10-08",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "supersedes": "d-064",
+          "status": "current"
+        },
+        {
+          "id": "d-066",
+          "name": {
+            "de": "Konsortialvertrag (Innenverhältnis) Entwurf",
+            "en": "Intercreditor / syndicate agreement draft"
+          },
+          "type": {
+            "de": "Verträge",
+            "en": "Contracts"
+          },
+          "category_key": "contracts",
+          "file": "Konsortialvertrag_Innenverhaeltnis_Entwurf.docx",
+          "version": 1,
+          "updated": "2026-10-01",
+          "sensitivity": "confidential",
+          "uploaded_by": "advisor-legal",
+          "note": "Betrifft nur die Banken, nicht für den Kreditnehmer / Lenders only, not for the borrower",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-11",
+      "name": {
+        "de": "Q&A und Kommunikation",
+        "en": "Q&A and Communication"
+      },
+      "documents": [
+        {
+          "id": "d-072",
+          "name": {
+            "de": "Q&A-Liste",
+            "en": "Q&A log"
+          },
+          "type": {
+            "de": "Sonstige Informationen",
+            "en": "Other information"
+          },
+          "category_key": "otherInformation",
+          "file": "QA_Log_Hafenkante.xlsx",
+          "version": 7,
+          "updated": "2026-10-06",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "note": "Fragen aller Banken mit Antworten; Fragesteller sind je Bank sichtbar / Questions from all banks with answers; asking bank is visible per row",
+          "status": "current"
+        },
+        {
+          "id": "d-073",
+          "name": {
+            "de": "Bankenpräsentation",
+            "en": "Lender presentation"
+          },
+          "type": {
+            "de": "Projektunterlagen",
+            "en": "Project documents"
+          },
+          "category_key": "projectDocuments",
+          "file": "Bankenpraesentation_2026-07.pdf",
+          "version": 1,
+          "updated": "2026-07-17",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-074",
+          "name": {
+            "de": "Protokoll Objektbesichtigung",
+            "en": "Site visit minutes"
+          },
+          "type": {
+            "de": "Sonstige Informationen",
+            "en": "Other information"
+          },
+          "category_key": "otherInformation",
+          "file": "Protokoll_Besichtigung_2026-07-23.pdf",
+          "version": 1,
+          "updated": "2026-07-24",
+          "sensitivity": "confidential",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-075",
+          "name": {
+            "de": "Absageschreiben Fjord Pfandbrief Bank",
+            "en": "Decline letter Fjord Pfandbrief Bank"
+          },
+          "type": {
+            "de": "Sonstige Informationen",
+            "en": "Other information"
+          },
+          "category_key": "otherInformation",
+          "file": "Absage_Fjord_PB_2026-08.pdf",
+          "version": 1,
+          "updated": "2026-08-19",
+          "sensitivity": "bank_specific",
+          "uploaded_by": "bank-e",
+          "concerns_party": "bank-e",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "f-12",
+      "name": {
+        "de": "Interne Unterlagen Arrangeur",
+        "en": "Arranger Internal"
+      },
+      "documents": [
+        {
+          "id": "d-076",
+          "name": {
+            "de": "Kreditvorlage",
+            "en": "Credit memo"
+          },
+          "type": {
+            "de": "Bonität",
+            "en": "Creditworthiness"
+          },
+          "category_key": "creditworthiness",
+          "file": "Kreditvorlage_Hafenkante.pdf",
+          "version": 2,
+          "updated": "2026-09-24",
+          "sensitivity": "internal",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-077",
+          "name": {
+            "de": "Internes Rating und Risikoeinstufung",
+            "en": "Internal rating and risk classification"
+          },
+          "type": {
+            "de": "Bonität",
+            "en": "Creditworthiness"
+          },
+          "category_key": "creditworthiness",
+          "file": "Rating_Hafenkante.pdf",
+          "version": 1,
+          "updated": "2026-09-03",
+          "sensitivity": "internal",
+          "uploaded_by": "bank-a",
+          "status": "current"
+        },
+        {
+          "id": "d-078",
+          "name": {
+            "de": "Allokationsübersicht Konsortium",
+            "en": "Syndicate allocation overview"
+          },
+          "type": {
+            "de": "Sonstige Informationen",
+            "en": "Other information"
+          },
+          "category_key": "otherInformation",
+          "file": "Allokation_Konsortium.xlsx",
+          "version": 5,
+          "updated": "2026-10-05",
+          "sensitivity": "internal",
+          "uploaded_by": "bank-a",
+          "note": "Tickets, Gebühren und Status je Bank / Tickets, fees and status per bank",
+          "status": "current"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "neoshare-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "NeoShare take-home — 'Who sees what?': Express API, permission engine, change log and conversation layer for the syndicated-loan data room",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

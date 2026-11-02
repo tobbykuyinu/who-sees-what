@@ -1,0 +1,699 @@
+{
+  "meta": {
+    "title": {
+      "de": "Berechtigungsmodell Datenraum (Mock)",
+      "en": "Data room permission model (mock)"
+    },
+    "note": {
+      "de": "Vereinfachtes Berechtigungsmodell für diese Aufgabe, teilweise an unsere Plattform angelehnt. Du darfst es ändern, wenn du es für falsch hältst.",
+      "en": "Simplified permission model for this task, partly based on our platform. You may change it if you think it is wrong."
+    },
+    "key_concepts": {
+      "de": "Ein Finanzierungsfall gehört einer Organisation (Fallinhaber). Der Datenraum besteht aus Gruppen mit Feldern und Dokumenten. Sichtbarkeit wird pro Gruppe und pro Organisation gesteuert. Was eine Organisation darüber hinaus tun darf, regelt ihr Berechtigungsset im Fall.",
+      "en": "A financing case belongs to one organisation (case owner). The data room consists of groups containing fields and documents. Visibility is controlled per group and per organisation. What an organisation may do beyond that is governed by its permission set in the case."
+    }
+  },
+  "permission_levels": [
+    {
+      "id": "none",
+      "label": {
+        "de": "Kein Zugriff",
+        "en": "No access"
+      },
+      "description": {
+        "de": "Die Gruppe ist für diese Organisation ausgeblendet. Sie sieht weder Inhalte noch dass die Gruppe existiert.",
+        "en": "The group is hidden from this organisation. It sees neither the contents nor that the group exists."
+      },
+      "includes": []
+    },
+    {
+      "id": "see_exists",
+      "label": {
+        "de": "Nur Existenz sichtbar",
+        "en": "Existence only"
+      },
+      "description": {
+        "de": "Titel der Gruppe oder des Dokuments ist sichtbar, der Inhalt ist gesperrt (z. B. bis zur NDA).",
+        "en": "The title of the group or document is visible, the content is locked (e.g. until the NDA is signed)."
+      },
+      "includes": []
+    },
+    {
+      "id": "view",
+      "label": {
+        "de": "Ansehen",
+        "en": "View"
+      },
+      "description": {
+        "de": "Felder und Dokumente der freigegebenen Gruppe im Browser ansehen. Entspricht der Rolle Beobachter.",
+        "en": "View fields and documents of the shared group in the browser. Corresponds to the observer role."
+      },
+      "includes": []
+    },
+    {
+      "id": "view_history",
+      "label": {
+        "de": "Änderungshistorie ansehen",
+        "en": "View revision history"
+      },
+      "description": {
+        "de": "Frühere Stände von Feldern und Dokumenten einsehen.",
+        "en": "See earlier revisions of fields and documents."
+      },
+      "includes": [
+        "view"
+      ]
+    },
+    {
+      "id": "download",
+      "label": {
+        "de": "Herunterladen / Exportieren",
+        "en": "Download / export"
+      },
+      "description": {
+        "de": "Dokumente herunterladen bzw. den Datenraum exportieren.",
+        "en": "Download documents or export the data room."
+      },
+      "includes": [
+        "view"
+      ]
+    },
+    {
+      "id": "ask_questions",
+      "label": {
+        "de": "Fragen stellen (Q&A)",
+        "en": "Ask questions (Q&A)"
+      },
+      "description": {
+        "de": "Fragen zum Fall an den Fallinhaber stellen, z. B. über bilaterale Chats. Antworten können als FAQ für alle sichtbar gemacht werden.",
+        "en": "Ask the case owner questions about the case, e.g. via bilateral chats. Answers can be published as FAQ for everyone."
+      },
+      "includes": [
+        "view"
+      ]
+    },
+    {
+      "id": "edit",
+      "label": {
+        "de": "Bearbeiten",
+        "en": "Edit"
+      },
+      "description": {
+        "de": "Felder ändern, Dokumente hochladen und neue Versionen ablegen. Entspricht der Rolle Bearbeiter.",
+        "en": "Change fields, upload documents and add new versions. Corresponds to the editor role."
+      },
+      "includes": [
+        "view",
+        "view_history",
+        "download"
+      ]
+    },
+    {
+      "id": "manage_access",
+      "label": {
+        "de": "Zugriff verwalten",
+        "en": "Manage access"
+      },
+      "description": {
+        "de": "Sichtbarkeit von Gruppen festlegen, Organisationen freischalten oder entziehen, Einladungen und Bewerbungen verwalten. Liegt beim Fallinhaber.",
+        "en": "Set group visibility, grant or revoke access for organisations, manage invitations and applications. Held by the case owner."
+      },
+      "includes": [
+        "view",
+        "view_history",
+        "download",
+        "ask_questions",
+        "edit"
+      ]
+    }
+  ],
+  "group_visibility_modes": [
+    {
+      "id": "private",
+      "label": {
+        "de": "Privat",
+        "en": "Private"
+      },
+      "description": {
+        "de": "Nur für den Fallinhaber verfügbar. Einzelne Organisationen können explizit freigeschaltet werden.",
+        "en": "Available to the case owner only. Individual organisations can be explicitly granted access."
+      }
+    },
+    {
+      "id": "interested",
+      "label": {
+        "de": "Fallinteressierte",
+        "en": "Interested parties"
+      },
+      "description": {
+        "de": "Für eingeladene Organisationen, Bewerber, Teilnehmer und Fallinhaber verfügbar. Typisch für Teaser-Unterlagen.",
+        "en": "Available to invited organisations, applicants, participants and the case owner. Typical for teaser material."
+      }
+    },
+    {
+      "id": "participants",
+      "label": {
+        "de": "Teilnehmer",
+        "en": "Participants"
+      },
+      "description": {
+        "de": "Für Teilnehmer und Fallinhaber verfügbar. Pro Teilnehmer einzeln an- und abschaltbar.",
+        "en": "Available to participants and the case owner. Can be switched on and off per participant."
+      }
+    },
+    {
+      "id": "public",
+      "label": {
+        "de": "Öffentlich",
+        "en": "Public"
+      },
+      "description": {
+        "de": "Alle Organisationen mit Zugriff auf diesen Fall können diese Gruppe sehen.",
+        "en": "All organisations with access to this case can see this group."
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "id": "case",
+      "label": {
+        "de": "Finanzierungsfall (Deal)",
+        "en": "Financing case (deal)"
+      },
+      "description": {
+        "de": "Der gesamte Deal inklusive Datenraum, Finanzierungsstruktur, Chats und FAQ.",
+        "en": "The whole deal including data room, financing structure, chats and FAQ."
+      }
+    },
+    {
+      "id": "data_room_group",
+      "label": {
+        "de": "Datenraum-Gruppe",
+        "en": "Data room group"
+      },
+      "description": {
+        "de": "Thematischer Abschnitt des Datenraums (z. B. Objektunterlagen). Hier wird die Sichtbarkeit gesetzt.",
+        "en": "Thematic section of the data room (e.g. property documents). This is where visibility is set."
+      }
+    },
+    {
+      "id": "folder",
+      "label": {
+        "de": "Ordner",
+        "en": "Folder"
+      },
+      "description": {
+        "de": "Unterordner innerhalb einer Gruppe. Erbt die Sichtbarkeit der Gruppe.",
+        "en": "Subfolder within a group. Inherits the group's visibility."
+      }
+    },
+    {
+      "id": "document",
+      "label": {
+        "de": "Dokument",
+        "en": "Document"
+      },
+      "description": {
+        "de": "Einzelnes Dokument mit Versionen. Eine abweichende Freigabe auf Dokumentebene (z. B. Side Letter für genau eine Bank) ist für die Aufgabe ergänzt.",
+        "en": "Single document with versions. A document-level override (e.g. a side letter for exactly one bank) was added for the task."
+      }
+    },
+    {
+      "id": "document_version",
+      "label": {
+        "de": "Dokumentversion",
+        "en": "Document version"
+      },
+      "description": {
+        "de": "Ein bestimmter Stand eines Dokuments. Sichtbarkeit pro Version ist für die Aufgabe ergänzt.",
+        "en": "A specific revision of a document. Per-version visibility was added for the task."
+      }
+    }
+  ],
+  "principals": [
+    {
+      "id": "organisation",
+      "label": {
+        "de": "Organisation (Bank)",
+        "en": "Organisation (bank)"
+      },
+      "description": {
+        "de": "Primärer Empfänger von Freigaben. Alle Nutzer einer Organisation sehen dasselbe.",
+        "en": "Primary recipient of access grants. All users of an organisation see the same."
+      }
+    },
+    {
+      "id": "audience_participants",
+      "label": {
+        "de": "Alle Teilnehmer",
+        "en": "All participants"
+      },
+      "description": {
+        "de": "Sammelempfänger: alle Organisationen, die am Fall teilnehmen, inklusive künftiger Teilnehmer, falls 'Standardmäßig sichtbar für neue' aktiv ist.",
+        "en": "Collective recipient: all organisations participating in the case, including future participants if 'Visible to new by default' is on."
+      }
+    },
+    {
+      "id": "audience_interested",
+      "label": {
+        "de": "Eingeladene, Bewerber, Chatkontakte",
+        "en": "Invitees, applicants, chat contacts"
+      },
+      "description": {
+        "de": "Organisationen, die eingeladen wurden, sich beworben haben oder nur per Chat beteiligt sind, aber noch nicht teilnehmen.",
+        "en": "Organisations that were invited, have applied or are only involved via chat, but do not participate yet."
+      }
+    },
+    {
+      "id": "explicitly_shared",
+      "label": {
+        "de": "Explizit freigegebene Organisation",
+        "en": "Explicitly shared organisation"
+      },
+      "description": {
+        "de": "Einzelne Organisation außerhalb des Teilnehmerkreises, der eine Gruppe gezielt freigegeben wurde.",
+        "en": "Single organisation outside the participant circle that was given access to a group on purpose."
+      }
+    },
+    {
+      "id": "user",
+      "label": {
+        "de": "Einzelner Nutzer",
+        "en": "Individual user"
+      },
+      "description": {
+        "de": "Freigabe an eine einzelne Person innerhalb einer Bank (z. B. nur das Deal-Team). Für die Aufgabe ergänzt.",
+        "en": "Grant to a single person within a bank (e.g. only the deal team). Added for the task."
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "case_owner",
+      "label": {
+        "de": "Fallinhaber (Arrangeur)",
+        "en": "Case owner (arranger)"
+      },
+      "description": {
+        "de": "Legt den Fall an, strukturiert den Datenraum und steuert, wer was sieht.",
+        "en": "Creates the case, structures the data room and controls who sees what."
+      },
+      "default_permissions": [
+        "manage_access"
+      ]
+    },
+    {
+      "id": "leader",
+      "label": {
+        "de": "Konsortialführer",
+        "en": "Lead participant"
+      },
+      "description": {
+        "de": "Führende Bank im Konsortium neben oder als Fallinhaber.",
+        "en": "Leading bank in the syndicate alongside or as case owner."
+      },
+      "default_permissions": [
+        "view",
+        "view_history",
+        "download",
+        "ask_questions",
+        "edit"
+      ]
+    },
+    {
+      "id": "structurer",
+      "label": {
+        "de": "Strukturierer",
+        "en": "Structurer"
+      },
+      "description": {
+        "de": "Unterstützt bei der Strukturierung der Finanzierung.",
+        "en": "Supports structuring the financing."
+      },
+      "default_permissions": [
+        "view",
+        "view_history",
+        "download",
+        "ask_questions",
+        "edit"
+      ]
+    },
+    {
+      "id": "participant",
+      "label": {
+        "de": "Teilnehmer (Konsortialbank)",
+        "en": "Participant (syndicate bank)"
+      },
+      "description": {
+        "de": "Bank, die sich mit einem Anteil an der Finanzierung beteiligt.",
+        "en": "Bank that takes a share of the financing."
+      },
+      "default_permissions": [
+        "view",
+        "download",
+        "ask_questions"
+      ]
+    },
+    {
+      "id": "collaborator",
+      "label": {
+        "de": "Mitwirkender",
+        "en": "Collaborator"
+      },
+      "description": {
+        "de": "Arbeitet am Fall mit, ohne selbst Kreditgeber zu sein.",
+        "en": "Works on the case without being a lender."
+      },
+      "default_permissions": [
+        "view",
+        "edit"
+      ]
+    },
+    {
+      "id": "appraiser",
+      "label": {
+        "de": "Gutachter",
+        "en": "Appraiser"
+      },
+      "description": {
+        "de": "Bewertet das Objekt und liefert Gutachten zu.",
+        "en": "Values the property and supplies appraisal reports."
+      },
+      "default_permissions": [
+        "view",
+        "edit"
+      ]
+    },
+    {
+      "id": "invitee",
+      "label": {
+        "de": "Eingeladene Bank",
+        "en": "Invited bank"
+      },
+      "description": {
+        "de": "Wurde zum Fall eingeladen, hat noch nicht zugesagt. Sieht typischerweise nur den Teaser.",
+        "en": "Was invited to the case, has not committed yet. Typically sees only the teaser."
+      },
+      "default_permissions": [
+        "view"
+      ]
+    },
+    {
+      "id": "applicant",
+      "label": {
+        "de": "Bewerber",
+        "en": "Applicant"
+      },
+      "description": {
+        "de": "Hat sich auf den Fall beworben, Entscheidung des Fallinhabers steht aus.",
+        "en": "Has applied to join the case, the case owner's decision is pending."
+      },
+      "default_permissions": [
+        "view"
+      ]
+    },
+    {
+      "id": "borrower",
+      "label": {
+        "de": "Kreditnehmer",
+        "en": "Borrower"
+      },
+      "description": {
+        "de": "Liefert Unterlagen zu, sieht aber keine bankinternen Bereiche.",
+        "en": "Supplies documents but sees no bank-internal areas."
+      },
+      "default_permissions": [
+        "view",
+        "edit"
+      ]
+    },
+    {
+      "id": "legal_advisor",
+      "label": {
+        "de": "Rechtsberater",
+        "en": "Legal advisor"
+      },
+      "description": {
+        "de": "Erstellt Vertragsdokumente, inklusive bankspezifischer Side Letter.",
+        "en": "Drafts contract documents, including bank-specific side letters."
+      },
+      "default_permissions": [
+        "view",
+        "download",
+        "edit"
+      ]
+    },
+    {
+      "id": "sponsor",
+      "label": {
+        "de": "Sponsor",
+        "en": "Sponsor"
+      },
+      "description": {
+        "de": "Gesellschafter des Kreditnehmers. Sieht in der Regel dieselben Unterlagen wie der Kreditnehmer.",
+        "en": "Shareholder of the borrower. Usually sees the same documents as the borrower."
+      },
+      "default_permissions": [
+        "view"
+      ]
+    }
+  ],
+  "data_room_roles": [
+    {
+      "id": "editor",
+      "label": {
+        "de": "Bearbeiter",
+        "en": "Editor"
+      },
+      "description": {
+        "de": "Darf in sichtbaren Gruppen Inhalte ändern und hochladen.",
+        "en": "May change and upload content in visible groups."
+      },
+      "maps_to": "edit"
+    },
+    {
+      "id": "observer",
+      "label": {
+        "de": "Beobachter",
+        "en": "Observer"
+      },
+      "description": {
+        "de": "Darf sichtbare Gruppen nur lesen.",
+        "en": "May only read visible groups."
+      },
+      "maps_to": "view"
+    }
+  ],
+  "phases": [
+    {
+      "id": "invited",
+      "label": {
+        "de": "Eingeladen (Teaser)",
+        "en": "Invited (teaser)"
+      },
+      "typical_visibility_mode": "interested"
+    },
+    {
+      "id": "nda_signed",
+      "label": {
+        "de": "NDA unterschrieben",
+        "en": "NDA signed"
+      },
+      "typical_visibility_mode": "participants"
+    },
+    {
+      "id": "committed",
+      "label": {
+        "de": "Zugesagt",
+        "en": "Committed"
+      },
+      "typical_visibility_mode": "participants"
+    },
+    {
+      "id": "declined",
+      "label": {
+        "de": "Abgesagt / ausgestiegen",
+        "en": "Declined / dropped out"
+      },
+      "typical_visibility_mode": "private"
+    }
+  ],
+  "rules": [
+    {
+      "id": "visibility_per_group",
+      "label": {
+        "de": "Sichtbarkeit pro Gruppe",
+        "en": "Visibility per group"
+      },
+      "description": {
+        "de": "Jede Datenraum-Gruppe hat genau einen Sichtbarkeitsmodus (Privat, Fallinteressierte, Teilnehmer, Öffentlich). Ordner und Dokumente darin erben ihn.",
+        "en": "Each data room group has exactly one visibility mode (private, interested parties, participants, public). Folders and documents inside inherit it."
+      }
+    },
+    {
+      "id": "per_organisation_toggle",
+      "label": {
+        "de": "Ein/Aus pro Organisation",
+        "en": "On/off per organisation"
+      },
+      "description": {
+        "de": "Innerhalb einer Gruppe kann die Sichtbarkeit für jede Organisation einzeln an- oder ausgeschaltet werden.",
+        "en": "Within a group, visibility can be switched on or off for each organisation individually."
+      }
+    },
+    {
+      "id": "default_for_new",
+      "label": {
+        "de": "Standardmäßig sichtbar für neue",
+        "en": "Visible to new by default"
+      },
+      "description": {
+        "de": "Pro Gruppe getrennt einstellbar für neue Teilnehmer und für neue Eingeladene, Bewerber und Chatkontakte.",
+        "en": "Configurable per group, separately for new participants and for new invitees, applicants and chat contacts."
+      }
+    },
+    {
+      "id": "mode_change_resets",
+      "label": {
+        "de": "Moduswechsel überschreibt Einzelfreigaben",
+        "en": "Mode change overwrites individual grants"
+      },
+      "description": {
+        "de": "Wechsel auf Öffentlich schaltet alle aktuellen Teilnehmer frei, Wechsel auf Privat entfernt alle Einzelfreigaben.",
+        "en": "Switching to public grants all current participants, switching to private removes all individual grants."
+      }
+    },
+    {
+      "id": "explicit_share",
+      "label": {
+        "de": "Explizite Freigabe",
+        "en": "Explicit share"
+      },
+      "description": {
+        "de": "Einzelne Organisationen außerhalb des Teilnehmerkreises können eine Gruppe gezielt sehen. So lassen sich auch bankspezifische Inhalte abbilden (private Gruppe plus eine Freigabe).",
+        "en": "Individual organisations outside the participant circle can be given a group on purpose. This also allows bank-specific content (private group plus one share)."
+      }
+    },
+    {
+      "id": "permission_set_per_participant",
+      "label": {
+        "de": "Berechtigungsset pro Teilnehmer",
+        "en": "Permission set per participant"
+      },
+      "description": {
+        "de": "Was eine Organisation im Fall tun darf (z. B. exportieren, andere Teilnehmer sehen, Einladungen verwalten), regelt ein Berechtigungsset. Es wird aus einer Vorlage je Teilnahmeart und Teilnahmestatus vorbelegt und kann pro Organisation angepasst werden.",
+        "en": "What an organisation may do in the case (e.g. export, see other participants, manage invitations) is governed by a permission set. It is prefilled from a template per participation type and participation state and can be adjusted per organisation."
+      }
+    },
+    {
+      "id": "see_other_participants",
+      "label": {
+        "de": "Andere Teilnehmer sehen",
+        "en": "See other participants"
+      },
+      "description": {
+        "de": "Eigene Berechtigung, ob eine Bank sieht, welche anderen Banken am Fall beteiligt sind.",
+        "en": "Separate permission controlling whether a bank sees which other banks are involved in the case."
+      }
+    },
+    {
+      "id": "owner_sees_all",
+      "label": {
+        "de": "Fallinhaber sieht alles",
+        "en": "Case owner sees everything"
+      },
+      "description": {
+        "de": "Der Fallinhaber hat immer Zugriff auf alle Gruppen, unabhängig vom Modus.",
+        "en": "The case owner always has access to all groups, regardless of mode."
+      }
+    },
+    {
+      "id": "participation_end",
+      "label": {
+        "de": "Ende der Teilnahme",
+        "en": "End of participation"
+      },
+      "description": {
+        "de": "Eine Teilnahme hat Start- und Enddatum. Was mit bereits gesehenen oder heruntergeladenen Unterlagen nach dem Ausstieg passiert, ist für die Aufgabe offen.",
+        "en": "A participation has a start and end date. What happens to documents already seen or downloaded after drop-out is open for the task."
+      }
+    },
+    {
+      "id": "document_override",
+      "label": {
+        "de": "Abweichende Freigabe auf Dokumentebene",
+        "en": "Document-level override"
+      },
+      "description": {
+        "de": "Ein einzelnes Dokument kann enger freigegeben werden als seine Gruppe (z. B. Side Letter nur für eine Bank). Die engere Regel gewinnt.",
+        "en": "A single document can be shared more narrowly than its group (e.g. a side letter for one bank only). The narrower rule wins."
+      }
+    },
+    {
+      "id": "version_visibility",
+      "label": {
+        "de": "Sichtbarkeit neuer Versionen",
+        "en": "Visibility of new versions"
+      },
+      "description": {
+        "de": "Eine neue Version übernimmt die Freigaben der vorherigen. Wer die alte Version gesehen hat, wird über die neue informiert.",
+        "en": "A new version inherits the grants of the previous one. Anyone who saw the old version is notified about the new one."
+      }
+    },
+    {
+      "id": "nda_gate",
+      "label": {
+        "de": "NDA-Sperre",
+        "en": "NDA gate"
+      },
+      "description": {
+        "de": "Gruppen mit diesem Merkmal werden erst sichtbar, wenn die Bank die NDA bestätigt hat.",
+        "en": "Groups with this flag become visible only once the bank has confirmed the NDA."
+      }
+    },
+    {
+      "id": "expiry",
+      "label": {
+        "de": "Befristeter Zugriff",
+        "en": "Time-limited access"
+      },
+      "description": {
+        "de": "Eine Freigabe kann ein Ablaufdatum haben und endet dann automatisch.",
+        "en": "A grant can have an expiry date and then ends automatically."
+      }
+    },
+    {
+      "id": "watermark",
+      "label": {
+        "de": "Wasserzeichen",
+        "en": "Watermark"
+      },
+      "description": {
+        "de": "Downloads werden mit Name der Bank und Datum markiert.",
+        "en": "Downloads are stamped with the bank's name and the date."
+      }
+    },
+    {
+      "id": "revocation_on_dropout",
+      "label": {
+        "de": "Entzug bei Ausstieg",
+        "en": "Revocation on drop-out"
+      },
+      "description": {
+        "de": "Steigt eine Bank aus, werden alle ihre Freigaben entzogen. Bereits heruntergeladene Dateien bleiben bei ihr.",
+        "en": "When a bank drops out, all its grants are revoked. Files already downloaded remain with the bank."
+      }
+    },
+    {
+      "id": "audit_log",
+      "label": {
+        "de": "Zugriffsprotokoll",
+        "en": "Access log"
+      },
+      "description": {
+        "de": "Wer hat wann welche Freigabe erteilt oder entzogen und wer hat welches Dokument geöffnet oder heruntergeladen.",
+        "en": "Who granted or revoked which access when, and who opened or downloaded which document."
+      }
+    }
+  ]
+}
