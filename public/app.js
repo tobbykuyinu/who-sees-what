@@ -669,8 +669,9 @@
       if (!res.ok) { var e = new Error('API ' + res.status); e.status = res.status; throw e; }
       return res.json();
     }).catch(function (e) {
-      if (e && e.name === 'AbortError') { e.network = true; e.message = 'API timed out'; }
-      if (e instanceof TypeError) { e.network = true; e.message = 'API unreachable'; }
+      try { e.network = true; } catch (_) { }
+      if (e && e.name === 'AbortError') { try { e.message = 'API timed out'; } catch (_) { e = new Error('API timed out'); e.network = true; } }
+      else if (e instanceof TypeError) { try { e.message = 'API unreachable'; } catch (_) { e = new Error('API unreachable'); e.network = true; } }
       throw e;
     }).finally(function () { if (timer) clearTimeout(timer); });
   }
