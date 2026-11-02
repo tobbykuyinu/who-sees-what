@@ -194,6 +194,17 @@
   function folder(id) { return FOLDERS.filter(function (f) { return f.id === id; })[0] || null; }
   function partyName(id) { var p = party(id); return p ? p.name : id; }
   function docName(id) { var d = doc(id); return d ? d.name : id; }
+  // Backend log entries may carry parties/docs as objects or as ids; normalize.
+  function partyLabel(v) {
+    if (v == null) return '';
+    if (typeof v === 'object') return v.name || v.partyId || v.id || '';
+    return partyName(v);
+  }
+  function docLabel(v) {
+    if (v == null) return '';
+    if (typeof v === 'object') return v.name || v.docId || v.id || '';
+    return docName(v);
+  }
 
   function isArranger(p) { return p.role === 'case_owner'; }
   function isBank(p) { return p.role === 'participant'; }
@@ -957,8 +968,8 @@
     var entries = (S.log && S.log.entries) || [];
     if (!entries.length) { wrap.innerHTML = emptyBox('No changes yet. Every applied action lands here, attributed.'); return; }
     wrap.innerHTML = entries.map(function (e) {
-      var parties = (e.affectedParties || []).map(partyName);
-      var docsChips = (e.docs || []).slice(0, 4).map(function (id) { return '<span class="chip-mini chip-doc">' + esc(docName(id)) + '</span>'; }).join('');
+      var parties = (e.affectedParties || []).map(partyLabel).filter(Boolean);
+      var docsChips = (e.docs || []).slice(0, 4).map(function (v) { return '<span class="chip-mini chip-doc">' + esc(docLabel(v)) + '</span>'; }).join('');
       if ((e.docs || []).length > 4) docsChips += '<span class="chip-mini">+' + (e.docs.length - 4) + ' more</span>';
       return '<div class="log-entry"><div class="log-time" title="' + esc(e.ts) + '">' + esc(timeAgo(e.ts)) + '</div>' +
         '<div class="log-body"><div class="log-summary">' + esc(e.actionSummary || e.summary || '') + '</div>' +
@@ -1043,19 +1054,20 @@
     var gains = (pr.granted || []).reduce(function (s, r) { return s + r.docIds.length; }, 0);
     var losses = (pr.revoked || []).reduce(function (s, r) { return s + r.docIds.length; }, 0);
     var exclCount = (pr.excluded || []).length;
-    if (!gains && !losses) return '<div class="pv-none">Nothing would change: everyone in scope already has this access, or no one can be granted it. Nothing to apply.</div>';
+
+    // Warnings first: a no-op preview can still carry the reason it is a no-op.
+    (pr.warnings || []).forEach(function (wrn) {
+      var lvl = wrn.level || '';
+      var cls = (lvl === 'block' || lvl === 'error') ? 'warn-red' : (lvl === 'warn' || lvl === 'warning') ? 'warn-amber' : 'warn-info';
+      html += '<div class="warn-banner ' + cls + '"><span class="warn-ico">' + ((lvl === 'block' || lvl === 'error') ? '⛔' : ((lvl === 'warn' || lvl === 'warning') ? '⚠' : 'ℹ')) + '</span><span>' + esc(wrn.msg) + '</span></div>';
+    });
+    if (!gains && !losses) return html + '<div class="pv-none">Nothing would change right now.</div>';
     html += '<div class="pv-headline">' +
       (gains ? '<span class="num">' + (pr.granted.length === 1 ? '1 party' : pr.granted.length + ' parties') + ' will gain access (' + gains + ' document' + (gains === 1 ? '' : 's') + ')</span>' : '') +
       (gains && losses ? ' · ' : '') +
       (losses ? '<span class="num-bad">' + (pr.revoked.length === 1 ? '1 party' : pr.revoked.length + ' parties') + ' will lose access (' + losses + ' document' + (losses === 1 ? '' : 's') + ')</span>' : '') +
       (exclCount ? '<div class="pv-excl" style="margin-top:4px">' + exclCount + ' parties stay excluded</div>' : '') +
       '</div>';
-
-    (pr.warnings || []).forEach(function (wrn) {
-      var lvl = wrn.level || '';
-      var cls = (lvl === 'block' || lvl === 'error') ? 'warn-red' : (lvl === 'warn' || lvl === 'warning') ? 'warn-amber' : 'warn-info';
-      html += '<div class="warn-banner ' + cls + '"><span class="warn-ico">' + ((lvl === 'block' || lvl === 'error') ? '⛔' : ((lvl === 'warn' || lvl === 'warning') ? '⚠' : 'ℹ')) + '</span><span>' + esc(wrn.msg) + '</span></div>';
-    });
 
     if ((pr.excluded || []).length) {
       html += '<div class="pv-section"><div class="pv-section-title">Stays excluded</div>';
@@ -1223,7 +1235,7 @@
       var html = '<div class="answer"><div class="answer-headline">' + esc(headline) + '</div>';
       if (partyIds.length) html += '<div class="chip-row">' + partyIds.slice(0, 12).map(function (id) { return '<span class="chip-mini chip-party">' + esc(partyName(id)) + '</span>'; }).join('') + '</div>';
       if (docIds.length) html += '<div class="chip-row">' + docIds.slice(0, 18).map(function (id) { return '<span class="chip-mini chip-doc">' + esc(docName(id)) + '</span>'; }).join('') + '</div>';
-      (a.reasons || []).forEach(function (r) { html += '<div class="reason">' + esc(r.msg || r.text || '') + '</div>'; });
+      (a.reasons || []).forEach(function (r) { html += '<div class="reason">' + esc(typeof r === 'object' ? (r.msg || r.text || '') : r) + '</div>'; });
       (a.lines || []).forEach(function (l) { html += '<div class="answer-line">' + esc(l) + '</div>'; });
       return html + '</div>';
     }
