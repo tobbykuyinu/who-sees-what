@@ -859,7 +859,7 @@
     var byParty = {};
     (S.access.matrix || []).forEach(function (r) { byParty[r.partyId] = r; });
 
-    var html = '<div class="matrix-scroll"><table class="matrix"><thead><tr><th class="corner">Party</th>';
+    var html = '<div class="matrix-scroll"><table class="matrix"><colgroup><col class="col-party"><col class="col-doc" span="12"></colgroup><thead><tr><th class="corner">Party</th>';
     folders.forEach(function (f) {
       var badge = f.id === 'f-12' ? 'internal' : (f.id === 'f-10' ? 'bank-specific docs' : '');
       var flag = f.id === 'f-10' ? '<span class="fh-badge" title="The interbank agreement is never visible to the borrower">borrower excluded</span>' : '';
@@ -875,8 +875,8 @@
       (row.excluded || []).forEach(function (e) { reasons[e.docId] = e.reason; });
       var declined = p.state === 'declined';
       html += '<tr class="' + (declined ? 'row-declined' : '') + '">';
-      html += '<th class="party-cell"><div class="party-name">' + esc(p.name) + '</div>' +
-        '<div class="party-sub">' + (p.ticketEur ? 'EUR ' + (p.ticketEur >= 1000000 ? (p.ticketEur / 1000000) + 'm' : p.ticketEur) + ' ticket' : (p.role === 'case_owner' ? 'EUR 50m hold' : '&nbsp;')) + '</div>' +
+      html += '<th class="party-cell"><div class="party-name" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
+        '<div class="party-sub" title="' + esc(p.name) + '">' + (p.ticketEur ? 'EUR ' + (p.ticketEur >= 1000000 ? (p.ticketEur / 1000000) + 'm' : p.ticketEur) + ' ticket' : (p.role === 'case_owner' ? 'EUR 50m hold' : '&nbsp;')) + '</div>' +
         '<div class="party-chips">' + stateChip(p) + partyFlags(p) + '</div></th>';
       folders.forEach(function (f) {
         var docs = DOCS.filter(function (d) { return d.group === f.id; });
