@@ -189,7 +189,7 @@
   function persist() {
     try { if (typeof localStorage !== 'undefined') localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch (e) { }
   }
-  function party(id) { return st.parties.filter(function (p) { return p.id === id; })[0] || null; }
+  function party(id) { load(); return st.parties.filter(function (p) { return p.id === id; })[0] || null; }
   function doc(id) { return DOCS.filter(function (d) { return d.id === id; })[0] || null; }
   function folder(id) { return FOLDERS.filter(function (f) { return f.id === id; })[0] || null; }
   function partyName(id) { var p = party(id); return p ? p.name : id; }
@@ -234,6 +234,7 @@
     return d.group === 'f-06' ? 'Lender-side document: valuation is for banks and advisors' : 'Lenders only: the interbank agreement is not for the borrower';
   }
   function fmtDate(iso) {
+    if (!iso) return '';
     try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
     catch (e) { return iso; }
   }
@@ -664,7 +665,8 @@
     getDeal: function () { return call('/api/deal', function () { return dealPayload(); }); },
     getAccess: function () { return call('/api/access', function () { return accessPayload(); }); },
     getLog: function () { return call('/api/log', function () { return logPayload(); }); },
-    apply: function (action) { return call('/api/apply', function (a) { return applyAction(a); }, action); },
+    apply: function (action) { return call('/api/apply', function (b) { return applyAction(b && b.action ? b.action : b); }, { action: action }); },
+    preview: function (action) { return call('/api/preview', function (b) { return computePreview(b && b.action ? b.action : b); }, { action: action }); },
     chat: function (text, convId) {
       return call('/api/chat', function (body) { return { conversationId: CONV_ID, reply: chat(body.text) }; }, { text: text, conversationId: convId || CONV_ID });
     },
@@ -732,6 +734,7 @@
   }
 
   function init() {
+    setMode('mock'); // demo mode: the local engine is complete and self-contained (the live API is verified separately)
     api.onModeChange(renderModeChip);
     renderModeChip(api.getMode());
     bindStatic();
@@ -774,9 +777,9 @@
   function rowRank(p) {
     if (p.role === 'case_owner') return 0;
     if (p.role === 'participant') {
-      if (p.status === 'committed') return 1;
-      if (p.status === 'nda_signed') return 2;
-      if (p.status === 'invited') return 3;
+      if (p.state === 'committed') return 1;
+      if (p.state === 'nda_signed') return 2;
+      if (p.state === 'invited') return 3;
       return 4; // declined
     }
     if (p.role === 'borrower') return 5;
@@ -787,7 +790,7 @@
     if (p.role === 'case_owner') return '<span class="state-chip state-arranger">Arranger</span>';
     if (p.role === 'participant') {
       var map = { committed: 'state-committed', nda_signed: 'state-nda', invited: 'state-invited', declined: 'state-declined' };
-      return '<span class="state-chip ' + map[p.status] + '">' + esc((p.status || '').replace('_', ' ')) + '</span>';
+      return '<span class="state-chip ' + map[p.state] + '">' + esc((p.state || '').replace('_', ' ')) + '</span>';
     }
     return '<span class="state-chip state-role">' + esc((p.role || '').replace('_', ' ')) + '</span>';
   }
@@ -795,7 +798,7 @@
     var out = '';
     var hasSideLetter = DOCS.some(function (d) { return d.sensitivity === 'bank_specific' && d.concernsPartyId === p.id && /side letter/i.test(d.name); });
     if (hasSideLetter) out += '<span class="flag" title="Side letter on file">🔒 side letter</span>';
-    if (p.status === 'declined') out += '<span class="flag" title="Access frozen at ' + esc(fmtDate(p.declinedDate)) + '">⏸ frozen</span>';
+    if (p.state === 'declined') out += '<span class="flag" title="Access frozen at ' + esc(fmtDate(p.declinedDate)) + '">⏸ frozen</span>';
     var awaiting = FEED.some(function (f) { return f.action.partyIds && f.action.partyIds.indexOf(p.id) !== -1 && S.appliedFeed.indexOf(f.id) === -1; });
     if (awaiting) out += '<span class="flag flag-await" title="Action pending">⏳ awaiting</span>';
     return out;
@@ -821,7 +824,7 @@
       row.visible.forEach(function (id) { vis[id] = true; });
       var reasons = {};
       (row.excluded || []).forEach(function (e) { reasons[e.docId] = e.reason; });
-      var declined = p.status === 'declined';
+      var declined = p.state === 'declined';
       html += '<tr class="' + (declined ? 'row-declined' : '') + '">';
       html += '<th class="party-cell"><div class="party-name">' + esc(p.name) + '</div>' +
         '<div class="party-sub">' + (p.ticketEur ? 'EUR ' + p.ticketEur + 'm ticket' : (p.role === 'case_owner' ? 'EUR 50m hold' : '&nbsp;')) + '</div>' +
@@ -853,7 +856,7 @@
     var reasons = {}; (row.excluded || []).forEach(function (e) { reasons[e.docId] = e.reason; });
     var docs = DOCS.filter(function (d) { return d.group === folderId; });
     var html = '<h4>' + esc(p.name) + ' · ' + esc(f.name) + '</h4>';
-    if (p.status === 'declined') html += '<div class="answer-line" style="color:var(--danger)">Frozen snapshot since ' + esc(fmtDate(p.declinedDate)) + ': nothing new is ever granted.</div>';
+    if (p.state === 'declined') html += '<div class="answer-line" style="color:var(--danger)">Frozen snapshot since ' + esc(fmtDate(p.declinedDate)) + ': nothing new is ever granted.</div>';
     docs.forEach(function (d) {
       var on = vis[d.id];
       var sup = d.status === 'superseded' ? '<span class="pop-sup">superseded</span>' : '';
@@ -938,7 +941,7 @@
     var partiesWrap = $('#action-parties');
     partiesWrap.innerHTML = S.deal.parties.map(function (p) {
       return '<label class="pick-label"><input type="checkbox" value="' + p.id + '">' +
-        '<span>' + esc(p.name) + '</span><span class="pick-count">' + esc((p.status || '').replace('_', ' ')) + '</span></label>';
+        '<span>' + esc(p.name) + '</span><span class="pick-count">' + esc((p.state || '').replace('_', ' ')) + '</span></label>';
     }).join('');
   }
   function panelAction() {
@@ -972,10 +975,18 @@
   /* ---------- preview modal ---------- */
   function openPreview(action, meta) {
     S.currentAction = action; S.currentMeta = meta || null;
-    var pr;
-    try { pr = computePreview(action); } catch (e) { return toast('Could not build the preview: ' + e.message, 'err'); }
-    S.currentPreview = pr;
-    showModal(action, pr);
+    // Live mode: the backend engine owns the simulation. Local engine only as fallback.
+    api.preview(action).then(function (pr) {
+      S.currentPreview = pr;
+      showModal(action, pr);
+    }).catch(function (err) {
+      try {
+        showModal(action, computePreview(action));
+        toast('Preview computed locally (API preview unavailable: ' + (err && err.message ? err.message : err) + ')', 'info');
+      } catch (e2) {
+        toast('Could not build the preview: ' + (e2 && e2.message ? e2.message : e2), 'err');
+      }
+    });
   }
   function showModal(action, pr) {
     var badge = $('#modal-badge');
@@ -1003,16 +1014,19 @@
       '</div>';
 
     (pr.warnings || []).forEach(function (wrn) {
-      var cls = wrn.level === 'block' ? 'warn-red' : (wrn.level === 'warn' ? 'warn-amber' : 'warn-info');
-      html += '<div class="warn-banner ' + cls + '"><span class="warn-ico">' + (wrn.level === 'block' ? '⛔' : (wrn.level === 'warn' ? '⚠' : 'ℹ')) + '</span><span>' + esc(wrn.msg) + '</span></div>';
+      var lvl = wrn.level || '';
+      var cls = (lvl === 'block' || lvl === 'error') ? 'warn-red' : (lvl === 'warn' || lvl === 'warning') ? 'warn-amber' : 'warn-info';
+      html += '<div class="warn-banner ' + cls + '"><span class="warn-ico">' + ((lvl === 'block' || lvl === 'error') ? '⛔' : ((lvl === 'warn' || lvl === 'warning') ? '⚠' : 'ℹ')) + '</span><span>' + esc(wrn.msg) + '</span></div>';
     });
 
     if ((pr.excluded || []).length) {
       html += '<div class="pv-section"><div class="pv-section-title">Stays excluded</div>';
       (pr.excluded || []).forEach(function (r) {
+        // Both engines: row reason may be a string (backend) or per-doc array (local).
+        var rowReason = typeof r.reason === 'string' ? r.reason : ((r.reasons || [])[0] || '');
         html += '<div class="pv-row"><div class="pv-party" style="color:var(--text-2)">' + esc(partyName(r.partyId)) + '</div>' +
-          '<div class="pv-docs">' + r.docIds.map(function (id, i) { return '<span class="pv-doc pv-doc-off" title="' + esc((r.reasons || [])[i] || '') + '">' + esc(docName(id)) + '</span>'; }).join('') + '</div>' +
-          '<div class="pv-excl">' + esc((r.reasons || [])[0] || '') + '</div></div>';
+          '<div class="pv-docs">' + (r.docIds || []).map(function (id, i) { return '<span class="pv-doc pv-doc-off" title="' + esc(rowReason || (r.reasons || [])[i] || '') + '">' + esc(docName(id)) + '</span>'; }).join('') + '</div>' +
+          '<div class="pv-excl">' + esc(rowReason) + '</div></div>';
       });
       html += '</div>';
     }
@@ -1097,7 +1111,8 @@
     var pendingIdx = S.messages.push({ role: 'assistant', pending: true }) - 1;
     renderThread();
     api.chat(text, S.convId).then(function (res) {
-      if (res && res.conversationId) S.convId = res.conversationId;
+      var cid = (res && res.conversationId) || (res && res.reply && res.reply.conversationId);
+      if (cid) S.convId = cid;
       var reply = res && res.reply ? res.reply : { kind: 'clarification', text: 'The API answered in an unexpected shape.', options: [] };
       if (reply.kind === 'decision-draft') {
         // Follow-ups refine the open draft in place: replace the old draft card.
@@ -1145,7 +1160,7 @@
       var d = reply.draft || {};
       var pr = d.preview || (d.action ? computePreview(d.action) : null);
       var html = '<div class="draft-card">';
-      html += '<div class="draft-label">' + esc(d.label || 'Proposed action') + '</div>';
+      html += '<div class="draft-label">' + esc(d.label || draftLabel(d.action)) + '</div>';
       if (d.note) html += '<span class="draft-note">⏳ ' + esc(d.note) + '</span>';
       html += '<div class="draft-scope">' + esc(scopeLabel(d.action)) + ' · ' + (d.action.docIds.length > 2 ? d.action.docIds.length + ' documents' : d.action.docIds.map(docName).join(', ')) + '</div>';
       if (pr) html += '<div>' + renderPreviewInline(pr) + '</div>';
@@ -1159,10 +1174,18 @@
     }
     if (reply.kind === 'answer') {
       var a = reply.answer || {};
-      var html = '<div class="answer"><div class="answer-headline">' + esc(a.headline || '') + '</div>';
-      if ((a.parties || []).length) html += '<div class="chip-row">' + a.parties.map(function (id) { return '<span class="chip-mini chip-party">' + esc(partyName(id)) + '</span>'; }).join('') + '</div>';
-      if ((a.docs || []).length) html += '<div class="chip-row">' + a.docs.map(function (id) { return '<span class="chip-mini chip-doc">' + esc(docName(id)) + '</span>'; }).join('') + '</div>';
-      (a.reasons || []).forEach(function (r) { html += '<div class="reason">' + esc(r.msg) + '</div>'; });
+      // Tolerant of both answer shapes: {headline, parties, docs, reasons, lines}
+      // (local engine) and {type, text, party, doc, rows} (backend engine).
+      var headline = a.headline || a.text || '';
+      var partyIds = a.parties || [];
+      if (!partyIds.length && a.party) partyIds = [a.party.id || a.party.partyId].filter(Boolean);
+      if (!partyIds.length && (a.rows || []).length) partyIds = a.rows.map(function (r) { return r.partyId || r.id; }).filter(Boolean);
+      var docIds = a.docs || [];
+      if (!docIds.length && a.doc) docIds = [a.doc.id || a.doc.docId].filter(Boolean);
+      var html = '<div class="answer"><div class="answer-headline">' + esc(headline) + '</div>';
+      if (partyIds.length) html += '<div class="chip-row">' + partyIds.slice(0, 12).map(function (id) { return '<span class="chip-mini chip-party">' + esc(partyName(id)) + '</span>'; }).join('') + '</div>';
+      if (docIds.length) html += '<div class="chip-row">' + docIds.slice(0, 18).map(function (id) { return '<span class="chip-mini chip-doc">' + esc(docName(id)) + '</span>'; }).join('') + '</div>';
+      (a.reasons || []).forEach(function (r) { html += '<div class="reason">' + esc(r.msg || r.text || '') + '</div>'; });
       (a.lines || []).forEach(function (l) { html += '<div class="answer-line">' + esc(l) + '</div>'; });
       return html + '</div>';
     }
@@ -1175,13 +1198,21 @@
     }
     return html;
   }
+  // Derive a human label for drafts the backend sends without one.
+  function draftLabel(action) {
+    if (!action) return 'Proposed action';
+    var verb = action.type === 'release' ? 'Release ' : 'Restrict ';
+    var docs = (action.docIds || []).slice(0, 2).map(docName).join(', ') + ((action.docIds || []).length > 2 ? ', +' + (action.docIds.length - 2) + ' more' : '');
+    return verb + docs + ' to ' + scopeLabel(action);
+  }
   function renderPreviewInline(pr) {
     var html = '';
     var gains = (pr.granted || []).reduce(function (s, r) { return s + r.docIds.length; }, 0);
     var exclCount = (pr.excluded || []).length;
     (pr.warnings || []).forEach(function (wrn) {
-      var cls = wrn.level === 'block' ? 'warn-red' : (wrn.level === 'warn' ? 'warn-amber' : 'warn-info');
-      html += '<div class="warn-banner ' + cls + '"><span class="warn-ico">' + (wrn.level === 'block' ? '⛔' : (wrn.level === 'warn' ? '⚠' : 'ℹ')) + '</span><span>' + esc(wrn.msg) + '</span></div>';
+      var lvl = wrn.level || '';
+      var cls = (lvl === 'block' || lvl === 'error') ? 'warn-red' : (lvl === 'warn' || lvl === 'warning') ? 'warn-amber' : 'warn-info';
+      html += '<div class="warn-banner ' + cls + '"><span class="warn-ico">' + ((lvl === 'block' || lvl === 'error') ? '⛔' : ((lvl === 'warn' || lvl === 'warning') ? '⚠' : 'ℹ')) + '</span><span>' + esc(wrn.msg) + '</span></div>';
     });
     if (!gains && !(pr.revoked || []).length) return html + '<div class="pv-none">Nothing would change.</div>';
     html += '<div class="pv-row"><div class="pv-party" style="min-width:auto">' +
