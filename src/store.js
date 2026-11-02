@@ -17,6 +17,7 @@ export function createStore(dataDir, stateDir = path.join(dataDir, 'state')) {
   const overlayPath = path.join(stateDir, 'overlay.json');
   const logPath = path.join(stateDir, 'log.jsonl');
 
+  const fresh = !fs.existsSync(overlayPath); // empty/fresh state dir -> seed on boot
   let overlay = readOverlay(overlayPath); // null => seed below once the index exists
   const log = readLog(logPath);           // newest first
 
@@ -37,6 +38,14 @@ export function createStore(dataDir, stateDir = path.join(dataDir, 'state')) {
     /** seed the overlay once the engine index exists (first boot only) */
     seedOverlay(seed) {
       if (overlay === null) { overlay = seed; persist(); }
+    },
+    /** seed the deal-story history — fresh state dirs only, never duplicates */
+    seedLog(entries) {
+      if (fresh && log.length === 0 && entries.length) {
+        log.push(...entries); // entries arrive newest-first
+        fs.mkdirSync(stateDir, { recursive: true });
+        fs.writeFileSync(logPath, entries.slice().reverse().map((e) => JSON.stringify(e)).join('\n') + '\n');
+      }
     },
     /** apply a computed change: swap the overlay, unshift the log entry */
     apply(nextOverlay, entry) {

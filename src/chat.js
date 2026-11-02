@@ -82,48 +82,87 @@ export function createChat(idx, deps) {
     const key = process.env.ANTHROPIC_AUTH_TOKEN;
     const model = process.env.ANTHROPIC_MODEL || 'deepseek-v4-pro[1m]';
     if (!key) return null;
-    const parties = deps.overlay().parties || [];
-    const docs = deps.overlay().documents || [];
-    const partyLine = parties.map((p) => `${p.id}:${p.name} (${p.state || p.status})`).join('; ');
-    const docLine = docs.slice(0, 60).map((d) => `${d.id}:${d.name}`).join('; ');
+
+    // Real data, straight from the index — the model drafts only with ids that
+    // exist (the engine re-validates below, but a grounded prompt drafts better).
+    const partyLine = [...idx.parties.values()]
+      .map((p) => `${p.id}:${p.name} (${p.status})`).join('; ');
+    const docLine = [...idx.docs.values()].slice(0, 60)
+      .map(({ doc }) => `${doc.id}:${doc.name.en}`).join('; ');
+
+    // Pending conditional grants — the LLM must be able to match them, e.g.
+    // "the Mainufer grant" = the pending NDA package for bank-f.
+    const pending = [];
+    for (const [docId, ov] of deps.overlay()) {
+      for (const partyId of ov.pending) {
+        const p = idx.parties.get(partyId);
+        const d = idx.docs.get(docId);
+        if (p && d) pending.push(`${p.name} -> "${d.doc.name.en}" (takes effect on NDA signature)`);
+      }
+    }
+
     const sys = [
-      'You are the intent layer of a data-room access product. Convert the analyst\'s message into STRICT JSON, one of:',
-      '{"kind":"decision-draft","action":{"type":"release","docIds":[],"partyScope":"committed|all|specific","partyIds":[]},"text":"short plain-English summary"}',
-      '{"kind":"answer","text":"plain-English answer about access"}',
-      '{"kind":"clarification","text":"question","options":["opt1","opt2"]}',
-      'Only ever draft release actions. Never include borrower or declined parties in grants.',
+      'You are the intent layer of a data-room access product. Convert the analyst\'s message into STRICT JSON, one of exactly these three shapes:',
+      '{"kind":"decision-draft","action":{"type":"release","docIds":["d-..."],"partyScope":"committed|all|specific","partyIds":["..."]},"text":"short plain-English summary of the draft"}',
+      '{"kind":"answer","text":"plain-English answer about access, with reasons"}',
+      '{"kind":"clarification","text":"one short question","options":["full imperative phrasing 1","full imperative phrasing 2"]}',
+      '',
+      'DRAFT FIRST: whenever the analyst wants to release, share, grant, send or publish documents, you MUST return kind=decision-draft with the best-matching docIds and partyScope from the lists below — never a clarification when any match exists. A clarification is only allowed when no document or no audience can be determined.',
+      'Use real ids ONLY from the lists. Never draft restrict actions. Never include borrower or declined parties in grants. "committed" means partyScope:"committed" (it includes NDA-signed parties). If the message ties the grant to an NDA signature, note it in text.',
+      'When you DO return a clarification, every option must be a full actionable phrasing that by itself resolves to a real intent, e.g. "Release the updated valuation (d-038) to everyone committed".',
       `PARTIES: ${partyLine}`,
       `DOCUMENTS: ${docLine}`,
+      `PENDING ACTIONS: ${pending.length ? pending.join('; ') : '(none)'}`,
       'Reply with JSON only, no markdown fences.',
     ].join('\n');
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 15000);
+      const timer = setTimeout(() => ctrl.abort(), 30000);
       const r = await fetch(`${base}/v1/messages`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
-        body: JSON.stringify({ model, max_tokens: 500, system: sys, messages: [{ role: 'user', content: text }] }),
+        // thinking models spend budget on a thinking block first — give the
+        // JSON draft room after it
+        body: JSON.stringify({ model, max_tokens: 2000, system: sys, messages: [{ role: 'user', content: text }] }),
         signal: ctrl.signal,
       });
       clearTimeout(timer);
       if (!r.ok) return null;
       const data = await r.json();
-      const content = (data.content || []).map((b) => b.text || '').join('');
-      const json = JSON.parse(content.replace(/^```json|```$/g, '').trim());
+      // some models emit a thinking block first — only text blocks carry the reply
+      const content = (data.content || [])
+        .filter((b) => b.type === 'text')
+        .map((b) => b.text || '').join('');
+      if (!content.trim()) {
+        console.error('[chat-llm] model returned no text (max_tokens hit during thinking?)');
+        return null;
+      }
+      const json = parseModelJson(content);
+      if (!json) return null;
       if (json.kind === 'decision-draft' && json.action) {
         const action = {
           type: 'release',
-          docIds: Array.isArray(json.action.docIds) ? json.action.docIds : [],
+          docIds: (Array.isArray(json.action.docIds) ? json.action.docIds : []).filter((id) => idx.docs.has(id)),
           partyScope: ['committed', 'all', 'specific'].includes(json.action.partyScope) ? json.action.partyScope : 'committed',
-          partyIds: Array.isArray(json.action.partyIds) ? json.action.partyIds : [],
+          partyIds: (Array.isArray(json.action.partyIds) ? json.action.partyIds : []).filter((id) => idx.parties.has(id)),
         };
+        if (!action.docIds.length) return null; // model hallucinated — let the parser fallback handle it
         const preview = deps.preview(action);
         return { kind: 'decision-draft', refined: false, change: null, text: json.text || 'Draft ready', draft: { action, preview } };
       }
       if (json.kind === 'answer' && json.text) return { kind: 'answer', answer: { type: 'llm', text: json.text } };
-      if (json.kind === 'clarification' && json.text) return { kind: 'clarification', question: json.text, options: (json.options || []).slice(0, 4) };
+      if (json.kind === 'clarification' && json.text) {
+        // Options must be actionable phrasings that map to real intents when
+        // sent back as the next message (value IS the phrasing).
+        const options = (json.options || [])
+          .filter((o) => typeof o === 'string' && o.trim())
+          .slice(0, 4)
+          .map((o) => ({ value: o.trim(), label: o.trim(), kind: 'phrase' }));
+        return { kind: 'clarification', question: json.text, options };
+      }
       return null;
     } catch (e) {
+      console.error('[chat-llm]', e && e.message);
       return null;
     }
   }
@@ -301,6 +340,9 @@ export function createChat(idx, deps) {
   function tryDraft(conv, text) {
     const t = text.toLowerCase().trim().replace(/\?+$/, '');
 
+    // asking for "the log" is a history question, never a release target
+    if (/(send|show|give)\s+(me\s+)?(the\s+)?(change\s+)?log/.test(t)) return answerHistory();
+
     // "exclude <party> from <doc>" as a fresh action
     let m = t.match(/^exclude\s+(.+?)\s+from\s+(.+)$/);
     if (m) {
@@ -311,7 +353,7 @@ export function createChat(idx, deps) {
     }
 
     const type = /restrict|revoke|withdraw|hide|lock|remove\s+access|take\s+away/.test(t) ? 'restrict'
-      : /release|grant|share|publish|give|open|unlock|expose|make\s+visible/.test(t) ? 'release'
+      : /release|grant|share|publish|give|open|unlock|expose|make\s+visible|send|\bget\b|\bneeds?\b/.test(t) ? 'release'
         : null;
     if (!type) return null;
 
@@ -326,7 +368,7 @@ export function createChat(idx, deps) {
     }
     const stripped = stripDocs(idx, t);
     const { parties } = matchParties(idx, stripped);
-    const scope = /everyone\s+committed|all\s+committed|committed\s+banks|the\s+syndicate|everyone\s+in\s+the\s+deal|in\s+the\s+deal/.test(stripped) ? 'committed'
+    const scope = /everyone\s+(who\s+)?committed|all\s+committed|committed\s+banks|the\s+syndicate|everyone\s+in\s+the\s+deal|in\s+the\s+deal/.test(stripped) ? 'committed'
       : /everyone|everybody|all\s+banks|all\s+parties|every\s+bank|to\s+all\b/.test(stripped) ? 'all'
         : parties.length ? 'specific' : null;
     if (!scope) {
@@ -386,6 +428,9 @@ export function createChat(idx, deps) {
 const DOC_MATCHERS = [
   { re: /\bvaluation\b.*\b(new|updated|update|latest|v2|version 2)\b|\b(new|updated|update|latest|v2|version 2)\b.*\bvaluation\b/, ids: ['d-038'] },
   { re: /\bvaluation\b/, ids: ['d-038'] },
+  // "the updated numbers/figures" is analyst-speak for the valuation update
+  // everyone is waiting on (Alpenland's note: "decision after updated valuation")
+  { re: /\b(numbers|figures)\b/, ids: (idx, t) => (/updated|new|latest|v2/.test(t) ? ['d-038'] : null) },
   { re: /side\s*letter/, ids: ['d-071'] },
   { re: /room\s*access|\bthe\s+room\b|\bdata\s+room\b/, ids: (idx) => confidentialCurrent(idx) },
   { re: /information\s*memorandum|\bmemo\b|\bim\b/, ids: ['d-009'] },
@@ -445,7 +490,10 @@ export function matchDocs(idx, text) {
   const t = text.toLowerCase();
   for (const { re, ids } of DOC_MATCHERS) {
     const m = t.match(re);
-    if (m) return { docIds: typeof ids === 'function' ? ids(idx, t) : ids, ambiguous: null, matched: m[0] };
+    if (!m) continue;
+    const resolved = typeof ids === 'function' ? ids(idx, t) : ids;
+    if (!resolved) continue; // alias deliberately declined the match (e.g. bare "numbers")
+    return { docIds: resolved, ambiguous: null, matched: m[0] };
   }
   // generic fallback: token overlap with document names
   const cands = docCandidates(idx, t);
@@ -511,4 +559,17 @@ function matchParties(idx, text) {
 
 function stateLabel(status) {
   return status === 'nda_signed' ? 'NDA signed' : status;
+}
+
+/** Parse the model's reply defensively: strip fences, then fall back to the
+ *  first {...} JSON object in the text (models occasionally add prose). */
+function parseModelJson(content) {
+  const cleaned = content.replace(/^```json|```$/g, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    try { return JSON.parse(m[0]); } catch { return null; }
+  }
 }

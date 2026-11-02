@@ -93,7 +93,7 @@ test('POST /api/apply — applies, logs with attribution, idempotent', async (t)
   assert.ok(access.body.matrix.find((r) => r.partyId === 'bank-d').visible.includes('d-038'));
 
   const log = await j(await fetch(`${base}/api/log`));
-  assert.equal(log.body.entries.length, 1);
+  assert.equal(log.body.entries.length, 6, '5 seeded entries + the new one');
   assert.equal(log.body.entries[0].docs[0].id, 'd-038');
 
   const again = await j(await fetch(`${base}/api/apply`, {
@@ -185,9 +185,124 @@ test('POST /api/chat — validation + unknown routes', async (t) => {
   assert.match(missing.body.error, /unknown route/);
 });
 
-test('GET /api/log — empty room answers history honestly', async (t) => {
+test('GET /api/log — seeded deal story answers history honestly, newest first', async (t) => {
   const { base, server } = await boot();
   t.after(() => server.close());
   const { body } = await j(await fetch(`${base}/api/log`));
-  assert.deepEqual(body.entries, []);
+  assert.equal(body.entries.length, 5, 'deal story seeded into a fresh state');
+  assert.match(body.entries[0].actionSummary, /Q&A log/, 'newest first');
+  assert.match(body.entries[4].actionSummary, /Alpenland signed the NDA/);
+  assert.equal(body.entries[3].affectedParties[0].id, 'bank-e', 'dropout entry names Fjord');
+});
+
+test('POST /api/chat — dispatch phrase: "I need everyone who committed to get the updated numbers right now"', async (t) => {
+  const { base, server } = await boot();
+  t.after(() => server.close());
+  const res = await j(await fetch(`${base}/api/chat`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text: 'I need everyone who committed to get the updated numbers right now' }),
+  }));
+  assert.equal(res.status, 200);
+  const r = res.body.reply;
+  assert.equal(r.kind, 'decision-draft');
+  assert.deepEqual(r.draft.action.docIds, ['d-038']);
+  assert.equal(r.draft.action.partyScope, 'committed');
+  assert.ok(r.draft.preview.granted.some((g) => g.partyId === 'bank-d'), 'valuation update released incl. Alpenland');
+});
+
+test('POST /api/chat — LLM fallback: draft-first prompt with real data + pending actions', async (t) => {
+  const { base, server } = await boot();
+  t.after(() => server.close());
+
+  // a pending grant exists so the prompt must surface it
+  const pending = await j(await fetch(`${base}/api/apply`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ action: { type: 'release', docIds: ['d-009'], partyScope: 'specific', partyIds: ['bank-f'], condition: 'nda_signed' } }),
+  }));
+  assert.equal(pending.status, 200);
+
+  const origFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('/v1/messages')) {
+      calls.push({ url, init });
+      return {
+        ok: true,
+        json: async () => ({
+          content: [{ type: 'text', text: JSON.stringify({ kind: 'decision-draft', text: 'Draft ready', action: { type: 'release', docIds: ['d-009'], partyScope: 'committed', partyIds: [] } }) }],
+        }),
+      };
+    }
+    return origFetch(url, init); // pass everything else through to the server
+  };
+  t.after(() => { globalThis.fetch = origFetch; });
+
+  const oldKey = process.env.ANTHROPIC_AUTH_TOKEN;
+  process.env.ANTHROPIC_AUTH_TOKEN = 'test-key';
+  t.after(() => { if (oldKey === undefined) delete process.env.ANTHROPIC_AUTH_TOKEN; else process.env.ANTHROPIC_AUTH_TOKEN = oldKey; });
+
+  // no parser keywords, no question pattern -> falls through to the LLM
+  const res = await j(await fetch(`${base}/api/chat`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text: 'make sure the participants have everything they should have' }),
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.body.reply.kind, 'decision-draft');
+  assert.equal(res.body.reply.draft.action.docIds[0], 'd-009');
+  assert.ok(res.body.reply.draft.preview, 'preview recomputed through the deterministic engine');
+
+  assert.equal(calls.length, 1);
+  const sys = JSON.parse(calls[0].init.body).system;
+  assert.match(sys, /DRAFT FIRST/);
+  assert.match(sys, /PENDING ACTIONS: Mainufer/, 'pending grant surfaced to the model');
+  assert.match(sys, /d-038/, 'real document ids in the prompt');
+  assert.match(sys, /bank-d:Alpenland/, 'real party ids in the prompt');
+});
+
+test('POST /api/chat — LLM fallback: clarification options become actionable phrasings; hallucinated ids are rejected', async (t) => {
+  const { base, server } = await boot();
+  t.after(() => server.close());
+
+  const origFetch = globalThis.fetch;
+  const canned = {
+    kind: 'clarification',
+    text: 'Which documents should everyone committed get?',
+    options: ['Release the updated valuation to everyone committed', 'Release the information memorandum to everyone committed'],
+  };
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('/v1/messages')) {
+      return {
+        ok: true,
+        json: async () => ({ content: [{ type: 'text', text: JSON.stringify(canned) }] }),
+      };
+    }
+    return origFetch(url, init);
+  };
+  t.after(() => { globalThis.fetch = origFetch; });
+
+  const oldKey = process.env.ANTHROPIC_AUTH_TOKEN;
+  process.env.ANTHROPIC_AUTH_TOKEN = 'test-key';
+  t.after(() => { if (oldKey === undefined) delete process.env.ANTHROPIC_AUTH_TOKEN; else process.env.ANTHROPIC_AUTH_TOKEN = oldKey; });
+
+  const chat = async (text) => j(await fetch(`${base}/api/chat`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text }),
+  }));
+
+  const cl = await chat('make sure the participants have everything they should have');
+  assert.equal(cl.body.reply.kind, 'clarification');
+  assert.equal(cl.body.reply.options[0].kind, 'phrase');
+  assert.equal(cl.body.reply.options[0].value, 'Release the updated valuation to everyone committed');
+  assert.equal(cl.body.reply.options[0].label, cl.body.reply.options[0].value, 'value IS the phrasing — echo it back');
+
+  // hallucinated doc ids never reach the engine
+  const bad = { kind: 'decision-draft', text: 'x', action: { type: 'release', docIds: ['d-999'], partyScope: 'committed', partyIds: [] } };
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('/v1/messages')) {
+      return { ok: true, json: async () => ({ content: [{ text: JSON.stringify(bad) }] }) };
+    }
+    return origFetch(url, init);
+  };
+  const res = await chat('make sure the participants have everything they should have');
+  assert.notEqual(res.body.reply.kind, 'decision-draft', 'hallucinated draft is dropped, parser fallback answers');
 });

@@ -9,7 +9,7 @@ import { Router } from 'express';
 import {
   buildIndex, computePreview, computeApply, buildAccessMatrix, docFlags,
 } from './engine.js';
-import { makeSeedOverlay } from './seed-state.js';
+import { makeSeedOverlay, makeSeedLog } from './seed-state.js';
 import { validateAction } from './validate.js';
 import { createChat } from './chat.js';
 
@@ -18,6 +18,7 @@ const DEFAULT_ACTOR = 'Nordwall analyst';
 export function createApp(store) {
   const idx = buildIndex(store.dataRoom);
   store.seedOverlay(makeSeedOverlay(idx));
+  store.seedLog(makeSeedLog(idx));
   const chat = createChat(idx, {
     preview: (action) => computePreview(idx, store.overlay, action),
     overlay: () => store.overlay,
