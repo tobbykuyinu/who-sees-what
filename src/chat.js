@@ -310,7 +310,11 @@ export function createChat(idx, deps) {
   function tryQuestion(conv, text) {
     const t = text.toLowerCase().trim().replace(/\?+$/, '');
 
-    let m = t.match(/^what\s+(can|does|do|may)\s+(.+?)\s+(see|access)$/);
+    let m = t.match(/(?:list|who are|which).*(?:participat|institution|bank)/i);
+    if (m && !/\b(see|access|document|valuation|side)\b/.test(t)) {
+      return answerParticipantList();
+    }
+    m = t.match(/^what\s+(can|does|do|may)\s+(.+?)\s+(see|access)$/);
     if (m) return answerPartyView(m[2]);
     m = t.match(/^can\s+(.+?)\s+(see|access)\s+(.+?)$/);
     if (m) return answerCanSee(m[1], m[3], 'can');
@@ -321,6 +325,18 @@ export function createChat(idx, deps) {
     m = t.match(/^what\s+changed(\s+(this\s+week|recently|lately|today))?/);
     if (m) return answerHistory();
     return null;
+  }
+
+  function answerParticipantList() {
+    const rows = Array.from(idx.parties.values());
+    const banks = rows.filter((p) => p.role === 'participant' || p.role === 'case_owner');
+    const banksLine = banks.map((p) => {
+      const st = p.status;
+      const label = st === 'declined' ? 'declined (frozen)' : st === 'invited' ? 'invited (NDA pending)' : st === 'nda_signed' ? 'NDA signed' : st;
+      return p.name + ' — ' + label;
+    }).join('; ');
+    const others = rows.filter((p) => !(p.role === 'participant' || p.role === 'case_owner')).map((p) => p.name + ' (' + p.role + ', ' + p.status + ')').join(', ');
+    return { kind: 'answer', answer: { type: 'party-list', text: 'Participating institutions: ' + banksLine + '. Also in the room: ' + others + '.' } };
   }
 
   function answerPartyView(who) {
