@@ -369,18 +369,19 @@
     var pr = computePreview(action);
     if (!pr.granted.length && !pr.revoked.length) return { ok: false, changeLogEntry: null };
     pr.granted.forEach(function (row) {
-      st.released[row.partyId] = st.released[row.partyId] || [];
       row.docIds.forEach(function (docId) {
-        if (st.released[row.partyId].indexOf(docId) === -1) st.released[row.partyId].push(docId);
+        // released/restricted are doc-keyed: { docId: [partyIds] }.
+        st.released[docId] = st.released[docId] || [];
+        if (st.released[docId].indexOf(row.partyId) === -1) st.released[docId].push(row.partyId);
         st.pending[docId] = false;
       });
       var p = party(row.partyId);
       if (isBank(p) && p.status === 'invited') { p.status = 'nda_signed'; p.committed = false; }
     });
     pr.revoked.forEach(function (row) {
-      st.restricted[row.partyId] = st.restricted[row.partyId] || [];
       row.docIds.forEach(function (docId) {
-        if (st.restricted[row.partyId].indexOf(docId) === -1) st.restricted[row.partyId].push(docId);
+        st.restricted[docId] = st.restricted[docId] || [];
+        if (st.restricted[docId].indexOf(row.partyId) === -1) st.restricted[docId].push(row.partyId);
       });
     });
     var entry = {
@@ -656,8 +657,9 @@
       setMode('live');
       return data;
     }).catch(function (e) {
-      if (mode === 'unknown' && unreachable(e)) { setMode('mock'); return mockFn(body); }
-      if (mode === 'live' && e.network === true) { setMode('mock'); return mockFn(body); }
+      // Decision on the failure itself, not on the mode: parallel calls in flight
+      // must all fall back together when the API is unreachable.
+      if (unreachable(e)) { setMode('mock'); return mockFn(body); }
       throw e;
     });
   }
@@ -734,7 +736,7 @@
   }
 
   function init() {
-    setMode('mock'); // demo mode: the local engine is complete and self-contained (the live API is verified separately)
+    // Live API first; the local engine takes over automatically when it is down.
     api.onModeChange(renderModeChip);
     renderModeChip(api.getMode());
     bindStatic();
