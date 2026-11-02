@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Hafenkante Quartier · Access Workspace · NeoShare</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f54eb'/%3E%3Cpath d='M9 22 L16 9 L23 22' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">NeoShare</span>
+    <span class="brand-sub">Access workspace</span>
+  </div>
+  <div class="deal-meta">
+    <span class="deal-name">Hafenkante Quartier · Syndicated financing</span>
+    <span class="deal-detail">EUR 145m facility · EUR 95m syndicated · arranger Nordwall Bank</span>
+  </div>
+  <div class="topbar-right">
+    <span id="ds-chip" class="chip">Connecting…</span>
+    <span class="user">Ana Berg · Nordwall</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Conversation entrypoint: a command bar that expands into a thread -->
+  <section class="card command-card" aria-label="Ask or act in plain English">
+    <div class="command-bar">
+      <span class="spark" aria-hidden="true">✦</span>
+      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Ask or act in plain English, e.g. “release the new valuation to everyone committed”"
+             aria-label="Ask or act in plain English">
+      <button id="btn-new-conv" class="btn-ghost" title="Start a new conversation" hidden>New</button>
+    </div>
+    <div id="cmd-suggestions" class="suggestions" hidden></div>
+    <div id="thread" class="thread" hidden aria-live="polite"></div>
+  </section>
+
+  <!-- This week's actions -->
+  <section class="card" aria-labelledby="feed-title">
+    <div class="card-head">
+      <div>
+        <h2 id="feed-title">This week's actions</h2>
+        <p class="card-sub">Prepared by you. Nothing applies before you preview it.</p>
+      </div>
+      <button id="btn-new-action" class="btn btn-secondary" aria-expanded="false" aria-controls="action-panel">New action</button>
+    </div>
+    <div id="action-panel" class="action-panel" hidden>
+      <div class="action-row">
+        <div class="seg" role="radiogroup" aria-label="Action type">
+          <button class="seg-btn is-active" data-type="release" type="button">Release access</button>
+          <button class="seg-btn" data-type="restrict" type="button">Restrict access</button>
+        </div>
+        <div class="scope-group" role="radiogroup" aria-label="Scope">
+          <label class="radio"><input type="radio" name="scope" value="committed" checked> Committed banks</label>
+          <label class="radio"><input type="radio" name="scope" value="all"> All parties</label>
+          <label class="radio"><input type="radio" name="scope" value="specific"> Specific parties</label>
+        </div>
+      </div>
+      <div class="action-row">
+        <div class="action-col">
+          <div class="field-label">Folders</div>
+          <div id="action-docs" class="doc-picker"></div>
+        </div>
+        <div class="action-col" id="action-parties-wrap" hidden>
+          <div class="field-label">Parties</div>
+          <div id="action-parties" class="party-picker"></div>
+        </div>
+      </div>
+      <div class="action-foot">
+        <span id="action-error" class="form-error" hidden></span>
+        <button id="btn-preview-action" class="btn btn-primary" type="button">Preview impact</button>
+      </div>
+    </div>
+    <div id="feed"></div>
+  </section>
+
+  <!-- Access matrix -->
+  <section class="card" aria-labelledby="matrix-title">
+    <div class="card-head">
+      <div>
+        <h2 id="matrix-title">Who sees what</h2>
+        <p class="card-sub">The live model of the room. Click any cell for the document-level detail.</p>
+      </div>
+    </div>
+    <div id="matrix"></div>
+    <div class="legend">
+      <span><i class="dot dot-full"></i> Full access</span>
+      <span><i class="dot dot-part"></i> Partial</span>
+      <span><i class="dot dot-none"></i> No access</span>
+      <span><i class="dot dot-frozen"></i> Frozen snapshot</span>
+      <span class="legend-sep">Flags:</span>
+      <span><b>🔒</b> side letter on file</span>
+      <span><b>⏸</b> declined, frozen</span>
+      <span><b>⏳</b> action pending</span>
+    </div>
+  </section>
+
+  <!-- Change log -->
+  <section class="card" aria-labelledby="log-title">
+    <div class="card-head">
+      <div>
+        <h2 id="log-title">Change log</h2>
+        <p class="card-sub">Every access change, attributed. This is how the room's history is answered.</p>
+      </div>
+    </div>
+    <div id="log"></div>
+  </section>
+
+</main>
+
+<!-- Impact preview modal -->
+<div id="modal-backdrop" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <header class="modal-head">
+      <span id="modal-badge" class="badge"></span>
+      <h3 id="modal-title"></h3>
+      <button id="modal-close" class="btn-ghost" aria-label="Close">✕</button>
+    </header>
+    <div id="modal-body" class="modal-body"></div>
+    <footer class="modal-foot">
+      <button id="modal-cancel" class="btn">Cancel</button>
+      <button id="modal-confirm" class="btn btn-primary">Apply change</button>
+    </footer>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<div id="popover" class="popover" hidden></div>
+
+<noscript><p style="padding:2rem;text-align:center">This workspace needs JavaScript.</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>
