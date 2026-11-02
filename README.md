@@ -78,13 +78,15 @@ Conversation memory is minimal per spec (current draft + last topic per
 
 An optional LLM fallback catches free-form intents the parser misses (set
 `ANTHROPIC_AUTH_TOKEN`, optionally `ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL`).
-Its prompt is **draft-first** (release/share/send intents always become a
-decision-draft, never a clarification), carries the real parties, documents
-**and pending actions**, and any clarification it does ask for comes with
-options that are full actionable phrasings. Model drafts are validated and
-re-computed through the same deterministic engine; hallucinated ids are
-dropped. Without the key, the server runs entirely on the deterministic
-layer.
+It talks to the Anthropic-compatible API via **tool calling**: the model may
+call `release_documents` (drafted, then re-computed through the same
+deterministic preview engine — hallucinated ids are dropped) or
+`query_access` (re-answered through the parser's answer layer); plain text
+is only for clarifications. The prompt is **draft-first**, carries the real
+parties, documents **and pending actions**, and steers "banks still in the
+deal" to the committed scope. Endpoints without tool support fall back to
+the previous JSON shape. Without the key, the server runs entirely on the
+deterministic layer.
 
 The change log opens with the deal's history seeded (Q&A release, rent-roll
 release, land-register update, Fjord's dropout, Alpenland's NDA) — seeded

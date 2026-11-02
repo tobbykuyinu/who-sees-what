@@ -25,6 +25,42 @@ import {
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
+/**
+ * The two tools the model may call (Anthropic-compatible tool_use, supported
+ * by the DeepSeek endpoint). release_documents drafts through the
+ * deterministic engine; query_access reuses the parser's answer layer. The
+ * model never mutates anything itself.
+ */
+const LLM_TOOLS = [
+  {
+    name: 'release_documents',
+    description: 'Draft a release action: give the named documents to a party scope. Call this whenever the analyst wants to release, share, grant, send or publish documents.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        docIds: { type: 'array', items: { type: 'string' }, description: 'Document ids from the DOCUMENTS list' },
+        partyScope: {
+          type: 'string', enum: ['committed', 'all', 'specific'],
+          description: '"committed" = everyone past the NDA gate (committed + NDA-signed banks); "all" = every party except declined; "specific" = the partyIds below',
+        },
+        partyIds: { type: 'array', items: { type: 'string' }, description: 'Party ids from the PARTIES list — only when partyScope is "specific"' },
+      },
+      required: ['docIds', 'partyScope'],
+    },
+  },
+  {
+    name: 'query_access',
+    description: 'Answer an access question: who can see a document, what a party can see, or whether a party can see a document. Call this for questions like "what can X see?", "can Y see Z?" or "who sees W?".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        question: { type: 'string', description: 'The access question to answer' },
+      },
+      required: ['question'],
+    },
+  },
+];
+
 export function createChat(idx, deps) {
   const conversations = new Map(); // conversationId -> { draft, lastText }
   let counter = 0;
@@ -102,19 +138,14 @@ export function createChat(idx, deps) {
     }
 
     const sys = [
-      'You are the intent layer of a data-room access product. Convert the analyst\'s message into STRICT JSON, one of exactly these three shapes:',
-      '{"kind":"decision-draft","action":{"type":"release","docIds":["d-..."],"partyScope":"committed|all|specific","partyIds":["..."]},"text":"short plain-English summary of the draft"}',
-      '{"kind":"answer","text":"plain-English answer about access, with reasons"}',
-      '{"kind":"clarification","text":"one short question","options":["full imperative phrasing 1","full imperative phrasing 2"]}',
-      '',
-      'DRAFT FIRST: whenever the analyst wants to release, share, grant, send or publish documents, you MUST return kind=decision-draft with the best-matching docIds and partyScope from the lists below — never a clarification when any match exists. A clarification is only allowed when no document or no audience can be determined.',
-      '"banks still in the deal" / "the syndicate" / "everyone who committed" means partyScope:"committed" — not a specific bank.',
-      'Use real ids ONLY from the lists. Never draft restrict actions. Never include borrower or declined parties in grants. "committed" means partyScope:"committed" (it includes NDA-signed parties). If the message ties the grant to an NDA signature, note it in text.',
-      'When you DO return a clarification, every option must be a full actionable phrasing that by itself resolves to a real intent, e.g. "Release the updated valuation (d-038) to everyone committed".',
+      'You are the intent layer of a data-room access product. You have two tools:',
+      '- release_documents: draft a release action. DRAFT FIRST: whenever the analyst wants to release, share, grant, send or publish documents, you MUST call release_documents with the best-matching docIds and partyScope — never reply with plain text when a document match exists.',
+      '- query_access: answer access questions (who can see what). Use it for questions like "what can X see?", "can Y see Z?", "who sees W?".',
+      'Plain text is ONLY for a clarification when no document or no audience can be determined.',
+      'Never draft restrict actions. Never include borrower or declined parties in grants. "committed" means partyScope "committed" (it includes NDA-signed parties); "banks still in the deal", "the syndicate" and "everyone who committed" also mean "committed". Use real ids ONLY from the lists.',
       `PARTIES: ${partyLine}`,
       `DOCUMENTS: ${docLine}`,
       `PENDING ACTIONS: ${pending.length ? pending.join('; ') : '(none)'}`,
-      'Reply with JSON only, no markdown fences.',
     ].join('\n');
     try {
       const ctrl = new AbortController();
@@ -131,35 +162,36 @@ export function createChat(idx, deps) {
           thinking: { type: 'disabled' },
           system: sys,
           messages: [{ role: 'user', content: text }],
+          tools: LLM_TOOLS,
         }),
         signal: ctrl.signal,
       });
       clearTimeout(timer);
       if (!r.ok) return null;
       const data = await r.json();
-      // some models emit a thinking block first — only text blocks carry the reply
-      const content = (data.content || [])
-        .filter((b) => b.type === 'text')
-        .map((b) => b.text || '').join('');
-      if (!content.trim()) {
-        console.error('[chat-llm] model returned no text (max_tokens hit during thinking?)');
+      const blocks = data.content || [];
+
+      // 1. tool calls — the primary contract. release_documents drafts through
+      //    the deterministic engine; query_access reuses the parser's answers.
+      const tool = blocks.find((b) => b.type === 'tool_use');
+      if (tool) return handleToolCall(tool, deps);
+
+      // 2. plain text. Backward-compatible JSON shapes for endpoints without
+      //    tool support; otherwise the prose is a clarification.
+      const textBlock = blocks.filter((b) => b.type === 'text').map((b) => b.text || '').join('').trim();
+      if (!textBlock) {
+        console.error('[chat-llm] model returned neither a tool call nor text');
         return null;
       }
-      const json = parseModelJson(content);
-      if (!json) return null;
-      if (json.kind === 'decision-draft' && json.action) {
-        const action = {
-          type: 'release',
-          docIds: (Array.isArray(json.action.docIds) ? json.action.docIds : []).filter((id) => idx.docs.has(id)),
-          partyScope: ['committed', 'all', 'specific'].includes(json.action.partyScope) ? json.action.partyScope : 'committed',
-          partyIds: (Array.isArray(json.action.partyIds) ? json.action.partyIds : []).filter((id) => idx.parties.has(id)),
-        };
-        if (!action.docIds.length) return null; // model hallucinated — let the parser fallback handle it
+      const json = parseModelJson(textBlock);
+      if (json && json.kind === 'decision-draft' && json.action) {
+        const action = validatedAction(json.action);
+        if (!action) return null; // model hallucinated — let the parser fallback handle it
         const preview = deps.preview(action);
         return { kind: 'decision-draft', refined: false, change: null, text: json.text || 'Draft ready', draft: { action, preview } };
       }
-      if (json.kind === 'answer' && json.text) return { kind: 'answer', answer: { type: 'llm', text: json.text } };
-      if (json.kind === 'clarification' && json.text) {
+      if (json && json.kind === 'answer' && json.text) return { kind: 'answer', answer: { type: 'llm', text: json.text } };
+      if (json && json.kind === 'clarification' && json.text) {
         // Options must be actionable phrasings that map to real intents when
         // sent back as the next message (value IS the phrasing).
         const options = (json.options || [])
@@ -168,11 +200,48 @@ export function createChat(idx, deps) {
           .map((o) => ({ value: o.trim(), label: o.trim(), kind: 'phrase' }));
         return { kind: 'clarification', question: json.text, options };
       }
-      return null;
+      return { kind: 'clarification', question: textBlock.slice(0, 300), options: [] };
     } catch (e) {
       console.error('[chat-llm]', e && e.message);
       return null;
     }
+  }
+
+  /** Handle a tool_use block: the gate stays deterministic either way. */
+  function handleToolCall(block, deps) {
+    if (block.name === 'release_documents') {
+      const action = validatedAction(block.input || {});
+      if (!action) return null; // hallucinated ids — the engine gate stays shut
+      const preview = deps.preview(action);
+      return {
+        kind: 'decision-draft', refined: false, change: null,
+        text: `Release ${action.docIds.length} document${action.docIds.length === 1 ? '' : 's'} to ${scopeLabel(action)}`,
+        draft: { action, preview },
+      };
+    }
+    if (block.name === 'query_access') {
+      const question = String((block.input || {}).question || '').trim();
+      if (!question) return null;
+      return tryQuestion(null, question); // the deterministic answer layer, unchanged
+    }
+    return null;
+  }
+
+  /** The engine re-validates every model draft: unknown ids never leak in. */
+  function validatedAction(raw) {
+    const action = {
+      type: 'release',
+      docIds: (Array.isArray(raw.docIds) ? raw.docIds : []).filter((id) => idx.docs.has(id)),
+      partyScope: ['committed', 'all', 'specific'].includes(raw.partyScope) ? raw.partyScope : 'committed',
+      partyIds: (Array.isArray(raw.partyIds) ? raw.partyIds : []).filter((id) => idx.parties.has(id)),
+    };
+    return action.docIds.length ? action : null;
+  }
+
+  function scopeLabel(action) {
+    if (action.partyScope === 'committed') return 'everyone committed (incl. NDA-signed)';
+    if (action.partyScope === 'all') return 'all parties';
+    return `${action.partyIds.length} named ${action.partyIds.length === 1 ? 'party' : 'parties'}`;
   }
 
   // ---- refinement ----------------------------------------------------------

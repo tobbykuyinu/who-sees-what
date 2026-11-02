@@ -306,3 +306,76 @@ test('POST /api/chat — LLM fallback: clarification options become actionable p
   const res = await chat('make sure the participants have everything they should have');
   assert.notEqual(res.body.reply.kind, 'decision-draft', 'hallucinated draft is dropped, parser fallback answers');
 });
+
+test('POST /api/chat — LLM tool calling: release_documents drafts via the engine, query_access answers', async (t) => {
+  const { base, server } = await boot();
+  t.after(() => server.close());
+
+  const origFetch = globalThis.fetch;
+  const calls = [];
+  let respond;
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('/v1/messages')) {
+      calls.push({ url, init });
+      return { ok: true, json: async () => respond };
+    }
+    return origFetch(url, init);
+  };
+  t.after(() => { globalThis.fetch = origFetch; });
+
+  const oldKey = process.env.ANTHROPIC_AUTH_TOKEN;
+  process.env.ANTHROPIC_AUTH_TOKEN = 'test-key';
+  t.after(() => { if (oldKey === undefined) delete process.env.ANTHROPIC_AUTH_TOKEN; else process.env.ANTHROPIC_AUTH_TOKEN = oldKey; });
+
+  const chat = async (text) => j(await fetch(`${base}/api/chat`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text }),
+  }));
+
+  // 1. release via tool call: draft re-computed through the deterministic engine
+  respond = { content: [{ type: 'tool_use', name: 'release_documents', input: { docIds: ['d-038'], partyScope: 'committed' } }] };
+  const draft = await chat('make sure the participants have everything they should have');
+  assert.equal(draft.body.reply.kind, 'decision-draft');
+  assert.deepEqual(draft.body.reply.draft.action.docIds, ['d-038']);
+  assert.equal(draft.body.reply.draft.action.partyScope, 'committed');
+  assert.ok(draft.body.reply.draft.preview.granted.some((g) => g.partyId === 'bank-d'), 'real preview from the engine');
+  assert.match(draft.body.reply.text, /Release 1 document/);
+
+  const sent = JSON.parse(calls[0].init.body);
+  assert.deepEqual(sent.tools.map((tl) => tl.name), ['release_documents', 'query_access'], 'both tools registered');
+  assert.match(sent.system, /release_documents/, 'prompt names the tools');
+
+  // 2. query_access reuses the deterministic answer layer
+  respond = { content: [{ type: 'tool_use', name: 'query_access', input: { question: 'what can Fjord see?' } }] };
+  const answer = await chat('make sure the participants have everything they should have');
+  assert.equal(answer.body.reply.kind, 'answer');
+  assert.match(answer.body.reply.answer.text, /dropped out/);
+
+  // 3. hallucinated tool args never reach the engine
+  respond = { content: [{ type: 'tool_use', name: 'release_documents', input: { docIds: ['d-999'], partyScope: 'all' } }] };
+  const hallucinated = await chat('make sure the participants have everything they should have');
+  assert.notEqual(hallucinated.body.reply.kind, 'decision-draft', 'unknown doc ids are dropped');
+
+  // 4. plain text (no tool) becomes a clarification
+  respond = { content: [{ type: 'text', text: 'Which document did you mean?' }] };
+  const plain = await chat('make sure the participants have everything they should have');
+  assert.equal(plain.body.reply.kind, 'clarification');
+  assert.equal(plain.body.reply.question, 'Which document did you mean?');
+});
+
+test('POST /api/chat — dispatch phrasings: "release the valuation to committed banks" drafts, "what can Fjord see?" answers (offline parser)', async (t) => {
+  const { base, server } = await boot();
+  t.after(() => server.close());
+  // no LLM key involved — this is the rule-parser path that stays as fallback
+  const chat = async (text) => j(await fetch(`${base}/api/chat`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text }),
+  }));
+  const draft = await chat('release the valuation to committed banks');
+  assert.equal(draft.body.reply.kind, 'decision-draft');
+  assert.deepEqual(draft.body.reply.draft.action.docIds, ['d-038']);
+  assert.equal(draft.body.reply.draft.action.partyScope, 'committed');
+  const answer = await chat('what can Fjord see?');
+  assert.equal(answer.body.reply.kind, 'answer');
+  assert.match(answer.body.reply.answer.text, /dropped out/);
+});
