@@ -181,7 +181,7 @@
     try { clear = new URLSearchParams(location.search).has('reset'); } catch (e) { }
     try {
       var raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORE_KEY) : null;
-      if (!clear && raw) { var p = JSON.parse(raw); if (p && p.v === 1) { st = p; return; } }
+      if (!clear && raw) { var p = JSON.parse(raw); if (p && p.v === 1 && Array.isArray(p.parties)) { st = p; return; } }
       if (clear && typeof localStorage !== 'undefined') localStorage.removeItem(STORE_KEY);
     } catch (e) { /* private mode or corrupt: use seed */ }
     st = freshState();
