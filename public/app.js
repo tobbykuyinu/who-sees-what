@@ -353,15 +353,23 @@
       var n = Object.keys(revoked).length;
       warnings.push(w('warn', null, null, n + (n === 1 ? ' party will' : ' parties will') + ' lose access they hold today. They may notice immediately.'));
     }
-    return { granted: toList(granted), revoked: toList(revoked), excluded: toList(excluded), warnings: warnings };
+    return { granted: toDocList(granted), revoked: toDocList(revoked), excluded: toExclList(excluded), warnings: warnings };
   }
   function w(level, partyId, docId, msg) { return { level: level, partyId: partyId, docId: docId, msg: msg }; }
   function addExcluded(map, partyId, docId, reason) {
     (map[partyId] = map[partyId] || []).push({ docId: docId, reason: reason });
   }
-  function toList(map) {
-    return st.parties.map(function (p) { return { partyId: p.id, docIds: (map[p.id] || []).map(function (e) { return e.docId; }), reasons: (map[p.id] || []).map(function (e) { return e.reason; }) }; })
-      .filter(function (r) { return r.docIds.length; });
+  // granted/revoked hold plain docId strings; excluded holds {docId, reason} rows.
+  function toDocList(map) {
+    return st.parties.map(function (p) {
+      return { partyId: p.id, docIds: (map[p.id] || []).slice() };
+    }).filter(function (r) { return r.docIds.length; });
+  }
+  function toExclList(map) {
+    return st.parties.map(function (p) {
+      var rows = map[p.id] || [];
+      return { partyId: p.id, docIds: rows.map(function (e) { return e.docId; }), reasons: rows.map(function (e) { return e.reason; }) };
+    }).filter(function (r) { return r.docIds.length; });
   }
 
   function applyAction(action) {
@@ -735,6 +743,22 @@
     return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   }
 
+  // Shape adapters: the live API uses state/folderName naming; the local
+  // engine uses status/folder. Normalise on ingest so both paths render alike.
+  function adaptDeal(d) {
+    if (!d || !d.parties) return d;
+    return {
+      parties: d.parties.map(function (p) { return { id: p.id, name: p.name, role: p.role, status: p.state || p.status, committed: !!p.committed, ticketEur: p.ticketEur, declinedDate: null, frozenDocIds: [] }; }),
+      documents: (d.documents || []).map(function (x) { return { id: x.id, name: x.name, folder: x.folderName || x.group || '', sensitivity: x.sensitivity, updatedAt: x.updatedAt, status: x.status, concernsParty: x.concernsParty || null }; }),
+      states: d.states || []
+    };
+  }
+  function adaptAccess(a) {
+    if (!a || !a.matrix) return a;
+    return { matrix: a.matrix.map(function (r) { return { partyId: r.partyId, state: r.state, visible: r.visible || [], excluded: r.excluded || [] }; }) };
+  }
+  function adaptLog(l) { return l && l.entries ? l : { entries: [] }; }
+
   function init() {
     // Live API first; the local engine takes over automatically when it is down.
     api.onModeChange(renderModeChip);
@@ -742,7 +766,7 @@
     bindStatic();
     renderSkeletons();
     Promise.all([api.getDeal(), api.getAccess(), api.getLog()]).then(function (rs) {
-      S.deal = rs[0]; S.access = rs[1]; S.log = rs[2];
+      S.deal = adaptDeal(rs[0]); S.access = adaptAccess(rs[1]); S.log = adaptLog(rs[2]);
       renderAll();
     }).catch(function (err) {
       $('#matrix').innerHTML = errorBox('Could not load the room: ' + (err && err.message ? err.message : err));
@@ -1074,7 +1098,7 @@
   }
   function refreshData() {
     Promise.all([api.getDeal(), api.getAccess(), api.getLog()]).then(function (rs) {
-      S.deal = rs[0]; S.access = rs[1]; S.log = rs[2];
+      S.deal = adaptDeal(rs[0]); S.access = adaptAccess(rs[1]); S.log = adaptLog(rs[2]);
       renderAll();
     }).catch(function (err) { toast('Could not refresh: ' + err.message, 'err'); });
   }
