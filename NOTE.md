@@ -11,6 +11,7 @@ An arranging bank runs the data room for a syndicated financing. The analyst con
 3. The week's scenarios from the brief (valuation update, side letter, NDA transition, dropout, borrower exclusion) define the scope.
 4. Document processing (search, extraction) exists and works. Mocked, as the brief allows.
 5. The intent layer is rule-based in this prototype. An LLM belongs there in production, behind the same deterministic gate.
+6. The interface works at two granularities: the matrix reasons about document groups (the room's folder structure) and the conversation reasons about individual documents. Releases act on files and the matrix aggregates. The group view gives the at-a-glance state, the file view gives precision; mixing them on one surface would make both worse.
 
 ## What I deliberately left out
 
