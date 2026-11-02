@@ -238,10 +238,12 @@
     catch (e) { return iso; }
   }
   function visibleIds(p) {
+    load();
     return DOCS.filter(function (d) { return visibilityReason(p, d) === null; }).map(function (d) { return d.id; });
   }
 
   function dealPayload() {
+    load();
     return {
       parties: st.parties.map(function (p) { return { id: p.id, name: p.name, role: p.role, state: p.status, committed: p.committed, ticketEur: p.ticketEur, declinedDate: p.declinedDate, frozenDocIds: p.frozenDocIds }; }),
       documents: DOCS,
@@ -249,6 +251,7 @@
     };
   }
   function accessPayload() {
+    load();
     return {
       matrix: st.parties.map(function (p) {
         var vis = visibleIds(p);
@@ -261,7 +264,7 @@
       })
     };
   }
-  function logPayload() { return { entries: st.log.slice() }; }
+  function logPayload() { load(); return { entries: st.log.slice() }; }
 
   // Scope resolution: "committed" = every bank past the NDA gate still in the deal.
   function scopeTargets(action) {
@@ -282,6 +285,7 @@
   }
 
   function computePreview(action) {
+    load();
     var targets = scopeTargets(action);
     var granted = {}, revoked = {}, excluded = {}, warnings = [];
     var isRelease = action.type === 'release';
@@ -360,6 +364,7 @@
   }
 
   function applyAction(action) {
+    load();
     var pr = computePreview(action);
     if (!pr.granted.length && !pr.revoked.length) return { ok: false, changeLogEntry: null };
     pr.granted.forEach(function (row) {
@@ -405,6 +410,7 @@
   var CONV_ID = 'conv-1';
 
   function chat(text) {
+    load();
     var t = (text || '').toLowerCase().trim();
     if (!t) return replyClarify('I did not catch that. Try an action or a question, e.g. "release the new valuation to everyone committed".', []);
     var p = partyMatch(t);
@@ -781,9 +787,9 @@
     if (p.role === 'case_owner') return '<span class="state-chip state-arranger">Arranger</span>';
     if (p.role === 'participant') {
       var map = { committed: 'state-committed', nda_signed: 'state-nda', invited: 'state-invited', declined: 'state-declined' };
-      return '<span class="state-chip ' + map[p.status] + '">' + esc(p.status.replace('_', ' ')) + '</span>';
+      return '<span class="state-chip ' + map[p.status] + '">' + esc((p.status || '').replace('_', ' ')) + '</span>';
     }
-    return '<span class="state-chip state-role">' + esc(p.role.replace('_', ' ')) + '</span>';
+    return '<span class="state-chip state-role">' + esc((p.role || '').replace('_', ' ')) + '</span>';
   }
   function partyFlags(p) {
     var out = '';
@@ -932,7 +938,7 @@
     var partiesWrap = $('#action-parties');
     partiesWrap.innerHTML = S.deal.parties.map(function (p) {
       return '<label class="pick-label"><input type="checkbox" value="' + p.id + '">' +
-        '<span>' + esc(p.name) + '</span><span class="pick-count">' + esc(p.status.replace('_', ' ')) + '</span></label>';
+        '<span>' + esc(p.name) + '</span><span class="pick-count">' + esc((p.status || '').replace('_', ' ')) + '</span></label>';
     }).join('');
   }
   function panelAction() {
